@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { ChevronDown, Play, Loader2, Download } from "lucide-react";
+import "../ScriptRunner.css"; // Import the CSS file
 
 const SurusUtilities = () => {
   const [selectedScript, setSelectedScript] = useState("");
@@ -94,19 +95,17 @@ const SurusUtilities = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-slate-100 p-6">
-      <div className="max-w-5xl mx-auto">
-        <div className="bg-white rounded-3xl shadow-2xl overflow-hidden">
-          <div className="bg-gradient-to-r from-indigo-600 to-blue-700 p-8 text-white">
-            <p className="text-blue-200 text-lg"></p>
+    <div className="su-bg">
+      <div className="su-container">
+        <div className="su-card">
+          <div className="su-header">
+            <p className="su-header-title"></p>
           </div>
 
-          <div className="p-8 space-y-8">
+          <div className="su-content">
             <div>
-              <label className="block text-lg font-medium text-gray-800 mb-2">
-                Choose Script
-              </label>
-              <div className="relative">
+              <label className="su-label">Choose Script</label>
+              <div className="su-select-wrapper">
                 <select
                   value={selectedScript}
                   onChange={(e) => {
@@ -115,7 +114,7 @@ const SurusUtilities = () => {
                     setResults([]);
                     setError("");
                   }}
-                  className="w-full appearance-none p-4 pr-12 rounded-xl border border-gray-300 focus:ring-4 focus:ring-indigo-400 focus:outline-none text-lg"
+                  className="su-select"
                 >
                   <option value="">Select a script...</option>
                   {Object.entries(scripts).map(([key, script]) => (
@@ -124,10 +123,12 @@ const SurusUtilities = () => {
                     </option>
                   ))}
                 </select>
-                <ChevronDown className="absolute right-4 top-4 h-6 w-6 text-gray-500 pointer-events-none" />
+                <span className="su-chevron">
+                  <ChevronDown size={24} color="#888" />
+                </span>
               </div>
               {selectedScript && (
-                <p className="mt-2 text-sm text-gray-600">
+                <p className="su-description">
                   {scripts[selectedScript].description}
                 </p>
               )}
@@ -135,67 +136,57 @@ const SurusUtilities = () => {
 
             {selectedScript && (
               <div>
-                <label className="block text-lg font-medium text-gray-800 mb-2">
-                  Input Data
-                </label>
+                <label className="su-label">Input Data</label>
                 <textarea
                   value={inputData}
                   onChange={(e) => setInputData(e.target.value)}
                   placeholder={scripts[selectedScript].placeholder}
-                  className="w-full h-48 p-5 text-base border border-gray-300 rounded-xl focus:ring-4 focus:ring-indigo-400 focus:outline-none resize-vertical"
+                  className="su-textarea"
                 />
               </div>
             )}
 
             {selectedScript && (
-              <div className="flex flex-wrap gap-4">
+              <div className="su-actions">
                 <button
                   onClick={handleSubmit}
                   disabled={isLoading || !inputData.trim()}
-                  className="flex items-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-lg shadow-md"
+                  className="su-btn su-btn-primary"
                 >
-                  {isLoading ? (
-                    <Loader2 className="h-5 w-5 animate-spin" />
-                  ) : (
-                    <Play className="h-5 w-5" />
-                  )}
+                  {isLoading ? <Loader2 className="su-icon-spin" /> : <Play />}
                   {isLoading ? "Processing..." : "Run Script"}
                 </button>
 
-                <button
-                  onClick={clearAll}
-                  className="px-6 py-3 bg-gray-600 text-white rounded-xl hover:bg-gray-700 text-lg shadow-md"
-                >
+                <button onClick={clearAll} className="su-btn su-btn-secondary">
                   Clear All
                 </button>
               </div>
             )}
 
             {error && (
-              <div className="p-4 bg-red-100 border border-red-300 text-red-700 rounded-xl">
-                <p className="font-semibold">Error: {error}</p>
+              <div className="su-error">
+                <p>
+                  <strong>Error:</strong> {error}
+                </p>
               </div>
             )}
 
             {results.length > 0 && (
               <div>
-                <div className="flex justify-between items-center mb-4">
-                  <h3 className="text-xl font-bold text-gray-800">Results</h3>
+                <div className="su-results-header">
+                  <h3 className="su-results-title">Results</h3>
                   <button
                     onClick={downloadResults}
-                    className="flex items-center gap-2 px-5 py-2 bg-green-600 text-white rounded-xl hover:bg-green-700 text-sm shadow"
+                    className="su-btn su-btn-download"
                   >
-                    <Download className="h-4 w-4" /> Download CSV
+                    <Download /> Download CSV
                   </button>
                 </div>
 
-                <div className="bg-gray-100 rounded-xl p-5 max-h-96 overflow-auto text-sm">
-                  <pre className="whitespace-pre-wrap text-gray-800">
+                <div className="su-results">
+                  <pre>
                     {results.map((result, index) => (
-                      <div
-                        key={index}
-                        className="py-1 border-b border-gray-200 last:border-b-0"
-                      >
+                      <div key={index} className="su-result-row">
                         {typeof result === "object"
                           ? JSON.stringify(result, null, 2)
                           : result}
@@ -207,11 +198,9 @@ const SurusUtilities = () => {
             )}
 
             {isLoading && (
-              <div className="flex justify-center items-center p-8">
-                <div className="flex items-center gap-3 text-indigo-600">
-                  <Loader2 className="h-6 w-6 animate-spin" />
-                  <span className="text-lg font-medium">Processing...</span>
-                </div>
+              <div className="su-loading">
+                <Loader2 className="su-icon-spin" />
+                <span>Processing...</span>
               </div>
             )}
           </div>
