@@ -1,5 +1,6 @@
 // pages/index.js
 import ScriptRunner from "../components/ScriptRunner";
+import "./index.css";
 
 export default function Home() {
   return (
