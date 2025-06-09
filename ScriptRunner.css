@@ -174,3 +174,8 @@
     transform: rotate(360deg);
   }
 }
+.su-title {
+  font-size: 3rem; /* Increase font size */
+  text-align: center; /* Center the text */
+  margin: 0; /* Optional: remove default margin */
+}

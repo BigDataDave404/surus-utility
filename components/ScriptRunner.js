@@ -1,5 +1,11 @@
 import { useState } from "react";
-import { ChevronDown, Play, Loader2, Download } from "lucide-react";
+import {
+  ChevronDown,
+  Play,
+  Loader2,
+  Download,
+  AlignCenter,
+} from "lucide-react";
 
 const SurusUtilities = () => {
   const [selectedScript, setSelectedScript] = useState("");
@@ -98,12 +104,15 @@ const SurusUtilities = () => {
       <div className="su-container">
         <div className="su-card">
           <div className="su-header">
-            <p className="su-header-title"></p>
+            <h2 className="su-title">Surus Utilities</h2>
+            <p className="su-subtitle">
+              Run scripts to manage DAT rates, target rates, and carrier tags
+            </p>
           </div>
 
           <div className="su-content">
             <div>
-              <label className="su-label">Choose Script</label>
+              {/* <label className="su-label">Choose Script</label> */}
               <div className="su-select-wrapper">
                 <select
                   value={selectedScript}
@@ -122,9 +131,9 @@ const SurusUtilities = () => {
                     </option>
                   ))}
                 </select>
-                <span className="su-chevron">
+                {/* <span className="su-chevron">
                   <ChevronDown size={24} color="#888" />
-                </span>
+                </span> */}
               </div>
               {selectedScript && (
                 <p className="su-description">
