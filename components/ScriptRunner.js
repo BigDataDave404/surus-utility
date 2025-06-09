@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { ChevronDown, Play, Loader2, Download } from "lucide-react";
 
-const LogisticsAPITool = () => {
+const SurusUtilities = () => {
   const [selectedScript, setSelectedScript] = useState("");
   const [inputData, setInputData] = useState("");
   const [results, setResults] = useState([]);
@@ -13,20 +13,21 @@ const LogisticsAPITool = () => {
       name: "Get DAT Rates",
       description: "Retrieve market rates from DAT API",
       placeholder:
-        "Enter lanes (one per line):\nCHICAGO,IL,ATLANTA,GA,V\nDALLAS,TX,HOUSTON,TX,R",
+        "Enter lanes (one per line):\nCHICAGO,IL,ATLANTA,GA,VAN\nDALLAS,TX,HOUSTON,TX,REEFER",
       endpoint: "/api/dat-rates",
     },
     "target-rate-tag": {
       name: "Enter Target Rate & Tag",
       description: "Set target rates and apply tags to shipments",
       placeholder:
-        "Enter ShipmentID,MinPay,Tag (one per line):\nSHIP123,1500,OPS1\nSHIP456,2000,OPS2",
+        "Enter ShipmentID,MinPay,Tag (one per line):\n993432,1500,OPS1\n921028,2000,OPS2",
       endpoint: "/api/target-rate-tag",
     },
     "tag-carrier": {
       name: "Tag Carrier Do Not Use",
       description: 'Mark carriers with "donotuse" tag',
-      placeholder: "Enter MC Numbers (one per line):\nMC123456\nMC789012",
+      placeholder:
+        "Enter MC Numbers (one per line excluding MC):\n123456\n789012",
       endpoint: "/api/tag-carrier",
     },
   };
@@ -98,9 +99,9 @@ const LogisticsAPITool = () => {
         <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
           {/* Header */}
           <div className="bg-gradient-to-r from-blue-600 to-indigo-700 p-6 text-white">
-            <h1 className="text-3xl font-bold mb-2">Logistics API Tool</h1>
+            <h1 className="text-3xl font-bold mb-2">Surus API Helper Tools</h1>
             <p className="text-blue-100">
-              Manage DAT rates, shipment targets, and carrier tags
+              Manage DAT rates, shipment target rates, and carrier tags
             </p>
           </div>
 
@@ -159,6 +160,7 @@ const LogisticsAPITool = () => {
                 <div className="flex gap-3">
                   <button
                     type="submit"
+                    onClick={handleSubmit}
                     disabled={isLoading || !inputData.trim()}
                     className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors font-medium"
                   >
@@ -236,12 +238,12 @@ const LogisticsAPITool = () => {
         </div>
 
         {/* Footer */}
-        <div className="text-center mt-8 text-gray-600 text-sm">
+        {/* <div className="text-center mt-8 text-gray-600 text-sm">
           <p>Logistics API Tool - Streamline your operations</p>
-        </div>
+        </div> */}
       </div>
     </div>
   );
 };
 
-export default LogisticsAPITool;
+export default SurusUtilities;
