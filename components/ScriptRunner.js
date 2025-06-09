@@ -1,6 +1,5 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { ChevronDown, Play, Loader2, Download } from "lucide-react";
-import "../ScriptRunner.css"; // Import the CSS file
 
 const SurusUtilities = () => {
   const [selectedScript, setSelectedScript] = useState("");
