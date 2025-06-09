@@ -1,5 +1,11 @@
-import SurusUtility from "../components/SurusUtility";
+// pages/index.js
+import ScriptRunner from "../components/ScriptRunner";
 
 export default function Home() {
-  return <SurusUtility />;
+  return (
+    <div>
+      <h1 style={{ textAlign: "center" }}>Surus Utility</h1>
+      <ScriptRunner />
+    </div>
+  );
 }
