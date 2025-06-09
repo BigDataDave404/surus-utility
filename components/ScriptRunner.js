@@ -94,120 +94,108 @@ const SurusUtilities = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
-      <div className="max-w-4xl mx-auto">
-        <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
-          {/* Header */}
-          <div className="bg-gradient-to-r from-blue-600 to-indigo-700 p-6 text-white">
-            <h1 className="text-3xl font-bold mb-2">Surus API Helper Tools</h1>
-            <p className="text-blue-100">
-              Manage DAT rates, shipment target rates, and carrier tags
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-slate-100 p-6">
+      <div className="max-w-5xl mx-auto">
+        <div className="bg-white rounded-3xl shadow-2xl overflow-hidden">
+          <div className="bg-gradient-to-r from-indigo-600 to-blue-700 p-8 text-white">
+            <h1 className="text-4xl font-extrabold mb-2">
+              Surus API Utilities
+            </h1>
+            <p className="text-blue-200 text-lg">
+              Effortlessly manage rates, shipments, and carrier tags
             </p>
           </div>
 
-          {/* Main Content */}
-          <div className="p-6">
-            <div className="space-y-6">
-              {/* Script Selection */}
-              <div className="space-y-2">
-                <label className="block text-sm font-semibold text-gray-700">
-                  Select Script
-                </label>
-                <div className="relative">
-                  <select
-                    value={selectedScript}
-                    onChange={(e) => {
-                      setSelectedScript(e.target.value);
-                      setInputData("");
-                      setResults([]);
-                      setError("");
-                    }}
-                    className="w-full p-3 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none bg-white"
-                  >
-                    <option value="">Choose a script...</option>
-                    {Object.entries(scripts).map(([key, script]) => (
-                      <option key={key} value={key}>
-                        {script.name}
-                      </option>
-                    ))}
-                  </select>
-                  <ChevronDown className="absolute right-3 top-3.5 h-5 w-5 text-gray-400 pointer-events-none" />
-                </div>
-                {selectedScript && (
-                  <p className="text-sm text-gray-600 mt-2">
-                    {scripts[selectedScript].description}
-                  </p>
-                )}
+          <div className="p-8 space-y-8">
+            <div>
+              <label className="block text-lg font-medium text-gray-800 mb-2">
+                Choose Script
+              </label>
+              <div className="relative">
+                <select
+                  value={selectedScript}
+                  onChange={(e) => {
+                    setSelectedScript(e.target.value);
+                    setInputData("");
+                    setResults([]);
+                    setError("");
+                  }}
+                  className="w-full appearance-none p-4 pr-12 rounded-xl border border-gray-300 focus:ring-4 focus:ring-indigo-400 focus:outline-none text-lg"
+                >
+                  <option value="">Select a script...</option>
+                  {Object.entries(scripts).map(([key, script]) => (
+                    <option key={key} value={key}>
+                      {script.name}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown className="absolute right-4 top-4 h-6 w-6 text-gray-500 pointer-events-none" />
               </div>
-
-              {/* Input Area */}
               {selectedScript && (
-                <div className="space-y-2">
-                  <label className="block text-sm font-semibold text-gray-700">
-                    Input Data
-                  </label>
-                  <textarea
-                    value={inputData}
-                    onChange={(e) => setInputData(e.target.value)}
-                    placeholder={scripts[selectedScript].placeholder}
-                    className="w-full h-40 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-vertical"
-                  />
-                </div>
-              )}
-
-              {/* Action Buttons */}
-              {selectedScript && (
-                <div className="flex gap-3">
-                  <button
-                    type="submit"
-                    onClick={handleSubmit}
-                    disabled={isLoading || !inputData.trim()}
-                    className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors font-medium"
-                  >
-                    {isLoading ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <Play className="h-4 w-4" />
-                    )}
-                    {isLoading ? "Processing..." : "Run Script"}
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={clearAll}
-                    className="px-6 py-3 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors font-medium"
-                  >
-                    Clear All
-                  </button>
-                </div>
+                <p className="mt-2 text-sm text-gray-600">
+                  {scripts[selectedScript].description}
+                </p>
               )}
             </div>
 
-            {/* Error Display */}
-            {error && (
-              <div className="mt-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-                <p className="text-red-700 font-medium">Error: {error}</p>
+            {selectedScript && (
+              <div>
+                <label className="block text-lg font-medium text-gray-800 mb-2">
+                  Input Data
+                </label>
+                <textarea
+                  value={inputData}
+                  onChange={(e) => setInputData(e.target.value)}
+                  placeholder={scripts[selectedScript].placeholder}
+                  className="w-full h-48 p-5 text-base border border-gray-300 rounded-xl focus:ring-4 focus:ring-indigo-400 focus:outline-none resize-vertical"
+                />
               </div>
             )}
 
-            {/* Results Display */}
+            {selectedScript && (
+              <div className="flex flex-wrap gap-4">
+                <button
+                  onClick={handleSubmit}
+                  disabled={isLoading || !inputData.trim()}
+                  className="flex items-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-lg shadow-md"
+                >
+                  {isLoading ? (
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                  ) : (
+                    <Play className="h-5 w-5" />
+                  )}
+                  {isLoading ? "Processing..." : "Run Script"}
+                </button>
+
+                <button
+                  onClick={clearAll}
+                  className="px-6 py-3 bg-gray-600 text-white rounded-xl hover:bg-gray-700 text-lg shadow-md"
+                >
+                  Clear All
+                </button>
+              </div>
+            )}
+
+            {error && (
+              <div className="p-4 bg-red-100 border border-red-300 text-red-700 rounded-xl">
+                <p className="font-semibold">Error: {error}</p>
+              </div>
+            )}
+
             {results.length > 0 && (
-              <div className="mt-6">
+              <div>
                 <div className="flex justify-between items-center mb-4">
-                  <h3 className="text-lg font-semibold text-gray-800">
-                    Results
-                  </h3>
+                  <h3 className="text-xl font-bold text-gray-800">Results</h3>
                   <button
                     onClick={downloadResults}
-                    className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm"
+                    className="flex items-center gap-2 px-5 py-2 bg-green-600 text-white rounded-xl hover:bg-green-700 text-sm shadow"
                   >
-                    <Download className="h-4 w-4" />
-                    Download CSV
+                    <Download className="h-4 w-4" /> Download CSV
                   </button>
                 </div>
 
-                <div className="bg-gray-50 rounded-lg p-4 max-h-96 overflow-auto">
-                  <pre className="text-sm text-gray-800 whitespace-pre-wrap">
+                <div className="bg-gray-100 rounded-xl p-5 max-h-96 overflow-auto text-sm">
+                  <pre className="whitespace-pre-wrap text-gray-800">
                     {results.map((result, index) => (
                       <div
                         key={index}
@@ -223,24 +211,16 @@ const SurusUtilities = () => {
               </div>
             )}
 
-            {/* Loading State */}
             {isLoading && (
-              <div className="mt-6 flex items-center justify-center p-8">
-                <div className="flex items-center gap-3 text-blue-600">
+              <div className="flex justify-center items-center p-8">
+                <div className="flex items-center gap-3 text-indigo-600">
                   <Loader2 className="h-6 w-6 animate-spin" />
-                  <span className="font-medium">
-                    Processing your request...
-                  </span>
+                  <span className="text-lg font-medium">Processing...</span>
                 </div>
               </div>
             )}
           </div>
         </div>
-
-        {/* Footer */}
-        {/* <div className="text-center mt-8 text-gray-600 text-sm">
-          <p>Logistics API Tool - Streamline your operations</p>
-        </div> */}
       </div>
     </div>
   );
