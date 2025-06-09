@@ -5,7 +5,7 @@ export default function Home() {
   return (
     <div>
       <Head>
-        <title>Surus Utilities</title>
+        <title>Surus</title>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </Head>
       <h1 style={{ textAlign: "left" }}>Surus Utilities</h1>
@@ -13,3 +13,5 @@ export default function Home() {
     </div>
   );
 }
+
+// test
