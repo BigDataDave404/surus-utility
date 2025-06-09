@@ -98,12 +98,7 @@ const SurusUtilities = () => {
       <div className="max-w-5xl mx-auto">
         <div className="bg-white rounded-3xl shadow-2xl overflow-hidden">
           <div className="bg-gradient-to-r from-indigo-600 to-blue-700 p-8 text-white">
-            <h1 className="text-4xl font-extrabold mb-2">
-              Surus API Utilities
-            </h1>
-            <p className="text-blue-200 text-lg">
-              Effortlessly manage rates, shipments, and carrier tags
-            </p>
+            <p className="text-blue-200 text-lg"></p>
           </div>
 
           <div className="p-8 space-y-8">
