@@ -1,4 +1,4 @@
-// pages/index.js
+import Head from "next/head";
 import ScriptRunner from "../components/ScriptRunner";
 
 export default function Home() {
