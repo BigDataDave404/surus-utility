@@ -36,60 +36,89 @@ function findCarrierID(obj) {
   return null;
 }
 
+// Rate limiter utility
+function rateLimit(tasks, callsPerSecond) {
+  const interval = 1000 / callsPerSecond;
+  let index = 0;
+  let results = [];
+
+  return new Promise((resolve) => {
+    function next() {
+      if (index >= tasks.length) {
+        Promise.allSettled(results).then(resolve);
+        return;
+      }
+      results.push(tasks[index++]());
+      if (index < tasks.length) {
+        setTimeout(next, interval);
+      }
+    }
+    next();
+  });
+}
+
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
+  const startTime = Date.now();
+
   try {
     const token = await getTurvoToken();
     const { inputData } = req.body;
-    const results = [];
 
-    for (const mcNumber of inputData) {
-      // Get carrier ID
-      const carrierResponse = await fetch(
-        `https://publicapi.turvo.com/v1/carriers/list?mcNumber[eq]=${mcNumber}`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            "x-api-key": process.env.PRODUCTION_API_KEY,
-            Authorization: `Bearer ${token}`,
-          },
+    // Prepare tasks for all MC numbers
+    const tasks = inputData.map((mcNumber) => async () => {
+      try {
+        // Get carrier ID
+        const carrierResponse = await fetch(
+          `https://publicapi.turvo.com/v1/carriers/list?mcNumber[eq]=${mcNumber}`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              "x-api-key": process.env.PRODUCTION_API_KEY,
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        const carrierData = await carrierResponse.json();
+        const carrierID = findCarrierID(carrierData);
+        if (!carrierID) {
+          return `MC ${mcNumber}: Carrier not found`;
         }
-      );
-
-      const carrierData = await carrierResponse.json();
-      const carrierID = findCarrierID(carrierData);
-
-      if (!carrierID) {
-        results.push(`MC ${mcNumber}: Carrier not found`);
-        continue;
-      }
-
-      // Tag carrier
-      const tagResponse = await fetch(
-        `https://publicapi.turvo.com/v1/tags/attach/carrier/${carrierID}`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            "x-api-key": process.env.PRODUCTION_API_KEY,
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ tagNames: ["donotuse"] }),
-        }
-      );
-
-      results.push(
-        `MC ${mcNumber}: ${
+        // Tag carrier
+        const tagResponse = await fetch(
+          `https://publicapi.turvo.com/v1/tags/attach/carrier/${carrierID}`,
+          {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+              "x-api-key": process.env.PRODUCTION_API_KEY,
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({ tagNames: ["donotuse"] }),
+          }
+        );
+        return `MC ${mcNumber}: ${
           tagResponse.ok ? "Tagged successfully" : "Tagging failed"
-        }`
-      );
-    }
+        }`;
+      } catch (error) {
+        return `MC ${mcNumber}: Error - ${error.message}`;
+      }
+    });
 
-    res.status(200).json({ results });
+    // Run all tagging tasks with a call limiter (39 calls per second)
+    const resultsSettled = await rateLimit(tasks, 39);
+    const results = resultsSettled.map((r) =>
+      r.status === "fulfilled" ? r.value : `Error: ${r.reason}`
+    );
+
+    const endTime = Date.now();
+    const durationSeconds = ((endTime - startTime) / 1000).toFixed(2);
+
+    res.status(200).json({ results, durationSeconds });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

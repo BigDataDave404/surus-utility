@@ -13,13 +13,15 @@ const SurusUtilities = () => {
   const [results, setResults] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [durationSeconds, setDurationSeconds] = useState(null);
 
   const scripts = {
     "dat-rates": {
       name: "Get DAT Rates",
-      description: "Retrieve market rates from DAT API",
+      description:
+        "Retrieve market rates from DAT API (Origin City,Origin State,Destination City,Destination State,Equipment).\nNo Spaces After Commas.",
       placeholder:
-        "Enter lanes (one per line):\nCHICAGO,IL,ATLANTA,GA,VAN\nDALLAS,TX,HOUSTON,TX,REEFER",
+        "Enter lanes (one per line):\nCHICAGO,IL,ATLANTA,GA,VAN\nDALLAS,TX,HOUSTON,TX,REEFER\nNEW HAVEN CT,NEW YORK,NY,FLATBEDS",
       endpoint: "/api/dat-rates",
     },
     "target-rate-tag": {
@@ -47,6 +49,7 @@ const SurusUtilities = () => {
     setIsLoading(true);
     setError("");
     setResults([]);
+    setDurationSeconds(null);
 
     try {
       const response = await fetch(scripts[selectedScript].endpoint, {
@@ -69,6 +72,9 @@ const SurusUtilities = () => {
       }
 
       setResults(data.results || []);
+      if (data.durationSeconds) {
+        setDurationSeconds(data.durationSeconds);
+      }
     } catch (err) {
       setError(err.message);
     } finally {
@@ -97,6 +103,7 @@ const SurusUtilities = () => {
     setInputData("");
     setResults([]);
     setError("");
+    setDurationSeconds(null);
   };
 
   return (
@@ -121,6 +128,7 @@ const SurusUtilities = () => {
                     setInputData("");
                     setResults([]);
                     setError("");
+                    setDurationSeconds(null);
                   }}
                   className="su-select"
                 >
@@ -183,6 +191,11 @@ const SurusUtilities = () => {
               <div>
                 <div className="su-results-header">
                   <h3 className="su-results-title">Results</h3>
+                  {durationSeconds && (
+                    <span className="su-results-timer">
+                      Time: {durationSeconds} seconds
+                    </span>
+                  )}
                   <button
                     onClick={downloadResults}
                     className="su-btn su-btn-download"
