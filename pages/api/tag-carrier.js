@@ -53,6 +53,7 @@ function rateLimit(tasks, callsPerSecond) {
         setTimeout(next, interval);
       }
     }
+    // Start the first batch
     next();
   });
 }
@@ -83,6 +84,15 @@ export default async function handler(req, res) {
             },
           }
         );
+        const carrierContentType =
+          carrierResponse.headers.get("content-type") || "";
+        if (
+          !carrierResponse.ok ||
+          !carrierContentType.includes("application/json")
+        ) {
+          const text = await carrierResponse.text();
+          return `MC ${mcNumber}: Carrier lookup failed - ${text}`;
+        }
         const carrierData = await carrierResponse.json();
         const carrierID = findCarrierID(carrierData);
         if (!carrierID) {
@@ -101,9 +111,12 @@ export default async function handler(req, res) {
             body: JSON.stringify({ tagNames: ["donotuse"] }),
           }
         );
-        return `MC ${mcNumber}: ${
-          tagResponse.ok ? "Tagged successfully" : "Tagging failed"
-        }`;
+        const tagContentType = tagResponse.headers.get("content-type") || "";
+        if (!tagResponse.ok || !tagContentType.includes("application/json")) {
+          const text = await tagResponse.text();
+          return `MC ${mcNumber}: Tagging failed - ${text}`;
+        }
+        return `MC ${mcNumber}: Tagged successfully`;
       } catch (error) {
         return `MC ${mcNumber}: Error - ${error.message}`;
       }
