@@ -1,20 +1,29 @@
+body {
+  font-family: "Inter", sans-serif;
+  background-color: #f3f4f6; /* Light gray background */
+  color: #1e293b; /* Dark gray text */
+  margin: 0;
+  padding: 0;
+}
+
 .su-bg {
   min-height: 100vh;
-  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-  padding: 24px;
+  display: flex;
+  background: linear-gradient(135deg, #0c0a09 0%, #3d3d3d 100%);
+  padding: 20px;
 }
 .su-container {
-  max-width: 900px;
+  max-width: px;
   margin: 0 auto;
 }
 .su-card {
   background: #fff;
-  border-radius: 24px;
+  border-radius: 25px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
   overflow: hidden;
 }
 .su-header {
-  background: linear-gradient(90deg, #4f46e5 0%, #2563eb 100%);
+  background: linear-gradient(90deg, #b23e3e 0%, #2563eb 100%);
   padding: 32px;
   color: #fff;
 }
@@ -24,15 +33,16 @@
 }
 .su-content {
   padding: 32px;
+  background: linear-gradient(90deg, #b23e3e 0%, #2563eb 100%);
   display: flex;
   flex-direction: column;
-  gap: 32px;
+  gap: 20px;
 }
 .su-label {
   display: block;
   font-size: 1.125rem;
   font-weight: 500;
-  color: #1e293b;
+  color: #ffffff;
   margin-bottom: 8px;
 }
 .su-select-wrapper {
@@ -41,7 +51,7 @@
 .su-select {
   width: 100%;
   padding: 16px 48px 16px 16px;
-  border-radius: 16px;
+  border-radius: 25px;
   border: 1px solid #d1d5db;
   font-size: 1.125rem;
   outline: none;
@@ -60,21 +70,24 @@
 .su-description {
   margin-top: 8px;
   font-size: 0.95rem;
-  color: #64748b;
+  color: #ffffff;
 }
 .su-textarea {
   width: 100%;
-  height: 12rem;
-  padding: 20px;
+  height: 18rem;
+  padding: 0px;
+  padding-left: 20px;
+  padding-top: 20px;
+  padding-right: 0px;
   font-size: 1rem;
-  border: 1px solid #d1d5db;
-  border-radius: 16px;
+  border-radius: 12px;
   outline: none;
   resize: vertical;
 }
 .su-textarea:focus {
-  border-color: #6366f1;
-  box-shadow: 0 0 0 4px #a5b4fc55;
+  border-color: #ffae0055;
+  box-shadow: 0 0 0 6px #ffae0055;
+  border-width: 1px;
 }
 .su-actions {
   display: flex;
@@ -92,14 +105,17 @@
   border: none;
   cursor: pointer;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-  transition: background 0.2s;
+  transition: background 2s;
 }
 .su-btn-primary {
-  background: #4f46e5;
+  background: #2563eb;
   color: #fff;
 }
 .su-btn-primary:hover:enabled {
-  background: #3730a3;
+  background: #2563eb;
+  border-color: #ffee00;
+  box-shadow: 0 0 0 4px #ffae0055;
+  border-width: 1px;
 }
 .su-btn-primary:disabled {
   background: #d1d5db;

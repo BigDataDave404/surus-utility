@@ -18,8 +18,7 @@ const SurusUtilities = () => {
   const scripts = {
     "dat-rates": {
       name: "Get DAT Rates",
-      description:
-        "Retrieve market rates from DAT API (Origin City,Origin State,Destination City,Destination State,Equipment).\nNo Spaces After Commas.",
+      description: "Retrieve market rates from DAT API",
       placeholder:
         "Enter lanes (one per line):\nCHICAGO,IL,ATLANTA,GA,VAN\nDALLAS,TX,HOUSTON,TX,REEFER\nNEW HAVEN CT,NEW YORK,NY,FLATBEDS",
       endpoint: "/api/dat-rates",
@@ -113,7 +112,7 @@ const SurusUtilities = () => {
           <div className="su-header">
             <h2 className="su-title">Surus Utilities</h2>
             <p className="su-subtitle">
-              Run scripts to manage DAT rates, target rates, and carrier tags
+              Manage DAT Rates, Target Rates, and Carrier DNU Tags
             </p>
           </div>
 
