@@ -36,26 +36,24 @@ function findCarrierID(obj) {
   return null;
 }
 
-// Rate limiter utility
-function rateLimit(tasks, callsPerSecond) {
-  const interval = 1000 / callsPerSecond;
-  let index = 0;
-  let results = [];
-
-  return new Promise((resolve) => {
-    function next() {
-      if (index >= tasks.length) {
-        Promise.allSettled(results).then(resolve);
-        return;
-      }
-      results.push(tasks[index++]());
-      if (index < tasks.length) {
-        setTimeout(next, interval);
-      }
+// Concurrency limiter: runs up to 'limit' tasks in parallel, with delay between batches
+async function runWithConcurrency(tasks, limit, delayMs) {
+  const results = [];
+  let i = 0;
+  while (i < tasks.length) {
+    const batch = tasks.slice(i, i + limit).map((fn) => fn());
+    // Wait for this batch to finish
+    // Use Promise.allSettled to capture all results
+    // eslint-disable-next-line no-await-in-loop
+    const batchResults = await Promise.allSettled(batch);
+    results.push(...batchResults);
+    i += limit;
+    if (i < tasks.length) {
+      // eslint-disable-next-line no-await-in-loop
+      await new Promise((resolve) => setTimeout(resolve, delayMs));
     }
-    // Start the first batch
-    next();
-  });
+  }
+  return results;
 }
 
 export default async function handler(req, res) {
@@ -68,6 +66,11 @@ export default async function handler(req, res) {
   try {
     const token = await getTurvoToken();
     const { inputData } = req.body;
+    if (!Array.isArray(inputData) || inputData.length === 0) {
+      return res
+        .status(400)
+        .json({ error: "inputData must be a non-empty array" });
+    }
 
     // Prepare tasks for all MC numbers
     const tasks = inputData.map((mcNumber) => async () => {
@@ -91,12 +94,16 @@ export default async function handler(req, res) {
           !carrierContentType.includes("application/json")
         ) {
           const text = await carrierResponse.text();
-          return `MC ${mcNumber}: Carrier lookup failed - ${text}`;
+          return {
+            mcNumber,
+            status: "error",
+            message: `Carrier lookup failed - ${text}`,
+          };
         }
         const carrierData = await carrierResponse.json();
         const carrierID = findCarrierID(carrierData);
         if (!carrierID) {
-          return `MC ${mcNumber}: Carrier not found`;
+          return { mcNumber, status: "error", message: "Carrier not found" };
         }
         // Tag carrier
         const tagResponse = await fetch(
@@ -114,18 +121,25 @@ export default async function handler(req, res) {
         const tagContentType = tagResponse.headers.get("content-type") || "";
         if (!tagResponse.ok || !tagContentType.includes("application/json")) {
           const text = await tagResponse.text();
-          return `MC ${mcNumber}: Tagging failed - ${text}`;
+          return {
+            mcNumber,
+            status: "error",
+            message: `Tagging failed - ${text}`,
+          };
         }
-        return `MC ${mcNumber}: Tagged successfully`;
+        return { mcNumber, status: "success", message: "Tagged successfully" };
       } catch (error) {
-        return `MC ${mcNumber}: Error - ${error.message}`;
+        return { mcNumber, status: "error", message: error.message };
       }
     });
 
-    // Run all tagging tasks with a call limiter (39 calls per second)
-    const resultsSettled = await rateLimit(tasks, 39);
+    // Run all tagging tasks with a concurrency limit of 39 per second
+    const resultsSettled = await runWithConcurrency(tasks, 39, 1000);
+    // Map to UI-friendly results
     const results = resultsSettled.map((r) =>
-      r.status === "fulfilled" ? r.value : `Error: ${r.reason}`
+      r.status === "fulfilled"
+        ? r.value
+        : { status: "error", message: r.reason }
     );
 
     const endTime = Date.now();
