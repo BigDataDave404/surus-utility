@@ -93,7 +93,7 @@ const SurusUtilities = () => {
     if (selectedScript === "check-mc") {
       // CSV header for check-mc
       csvContent = [
-        "MC Number,Status,ID,Name,Carrier Status,Address,Phone,MC Number,DOT Number,Common Authority,Contract Authority,Broker Authority",
+        "MC Number,Status,ID,Name,Carrier Status,Address,Phone,,DOT Number,Common Authority,Contract Authority,Broker Authority",
         ...results.map((result) => {
           if (typeof result === "object" && result.details) {
             const fields = extractCheckMCFields(result);
@@ -105,7 +105,6 @@ const SurusUtilities = () => {
               fields.carrierStatus,
               fields.address,
               fields.phone,
-              fields.mcNumber,
               fields.dotNumber,
               fields.authority.commonAuthority,
               fields.authority.contractAuthority,
@@ -166,42 +165,40 @@ const SurusUtilities = () => {
     if (!carrier) {
       console.error("No carrier details found in result:", result);
       return {
-        mcNumber: result.mcNumber,
+        mcNumber: result.mcNumber || "N/A",
         status: "error",
         message: "Carrier details missing",
       };
     }
 
     return {
-      mcNumber: result.mcNumber,
-      status: result.status,
+      mcNumber: result.mcNumber || "N/A",
+      status: result.status || "Unknown",
       id: carrier.id || "N/A",
       name: carrier.name || "N/A",
       carrierStatus: carrier.status?.description || "Unknown",
       mcNumberConfirmed: carrier.mcNumber || "N/A",
       dotNumber: carrier.dotNumber || "N/A",
       address: formatAddress(carrier.address?.find((addr) => addr.isPrimary)),
-      equipment:
-        carrier.equipment
-          ?.map((e) => `${e.qty}x ${e.size?.value} ${e.type?.value}`)
-          .join(", ") || "N/A",
-      insurance:
-        carrier.insurance
-          ?.map(
-            (i) =>
-              `${i.type?.value}: $${i.amount.toLocaleString()} (Exp: ${
-                i.expirationDate
-              })`
-          )
-          .join("; ") || "N/A",
+      equipment: carrier.equipment
+        ?.map((e) => `${e.qty}x ${e.size?.value} ${e.type?.value}`)
+        .join(", "),
+      insurance: carrier.insurance
+        ?.map(
+          (i) =>
+            `${i.type?.value}: $${i.amount.toLocaleString()} (Exp: ${
+              i.expirationDate
+            })`
+        )
+        .join("; "),
+      phone: carrier.phone || "N/A", // add if expected
+      authority: carrier.authority || {}, // add if expected, or handle safely in CSV
     };
   }
 
   function formatAddress(addr) {
     if (!addr) return "N/A";
-    return `${addr.line1 || ""}, ${addr.city || ""}, ${addr.state || ""}, ${
-      addr.zip || ""
-    }, ${addr.country || ""}`;
+    return `${addr.line1}, ${addr.city}, ${addr.state}, ${addr.zip}, ${addr.country}`;
   }
 
   return (
