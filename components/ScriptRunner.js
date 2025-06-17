@@ -89,11 +89,58 @@ const SurusUtilities = () => {
   };
 
   const downloadResults = () => {
-    const csvContent = results
-      .map((result) =>
-        typeof result === "object" ? Object.values(result).join(",") : result
-      )
-      .join("\n");
+    let csvContent = "";
+    if (selectedScript === "check-mc") {
+      // CSV header for check-mc
+      csvContent = [
+        "MC Number,Status,ID,Name,Status Value,Address,Phone,MC Number,DOT Number,Common Authority,Contract Authority,Broker Authority",
+        ...results.map((result) => {
+          if (typeof result === "object" && result.details) {
+            const fields = extractCheckMCFields(result);
+            return [
+              fields.mcNumber,
+              fields.status,
+              fields.id,
+              fields.name,
+              fields.statusValue,
+              fields.address,
+              fields.phone,
+              fields.mcNumber,
+              fields.dotNumber,
+              fields.authority.commonAuthority,
+              fields.authority.contractAuthority,
+              fields.authority.brokerAuthority,
+            ]
+              .map((v) => (v ? String(v).replace(/,/g, " ") : ""))
+              .join(",");
+          } else if (typeof result === "object") {
+            // error case
+            return [
+              result.mcNumber || "",
+              result.status || "error",
+              "",
+              "",
+              "",
+              "",
+              "",
+              "",
+              "",
+              "",
+              "",
+              result.message || "No details found",
+            ].join(",");
+          }
+          return "";
+        }),
+      ].join("\n");
+    } else {
+      // Fallback for other scripts: join all object values or use string
+      csvContent = results
+        .map((result) =>
+          typeof result === "object" ? Object.values(result).join(",") : result
+        )
+        .join("\n");
+    }
 
     const blob = new Blob([csvContent], { type: "text/csv" });
     const url = window.URL.createObjectURL(blob);
@@ -113,10 +160,14 @@ const SurusUtilities = () => {
   };
 
   // Helper to extract key fields from check-mc details
-  function extractCheckMCFields(details) {
-    if (!details || typeof details !== "object") return {};
+  function extractCheckMCFields(result) {
+    const details = result.details || {};
     return {
-      status: details.status?.description || details.status?.value || "",
+      status:
+        result.Status ||
+        details.status?.description ||
+        details.status?.value ||
+        "",
       id: details.id || "",
       name: details.name || "",
       statusValue: details.status?.code?.value || "",
@@ -298,7 +349,7 @@ const SurusUtilities = () => {
                       // CHECK-MC: show selected fields
                       if (selectedScript === "check-mc") {
                         if (typeof result === "object" && result.details) {
-                          const fields = extractCheckMCFields(result.details);
+                          const fields = extractCheckMCFields(result);
                           return (
                             <div key={index} className="su-result-row">
                               <div>
