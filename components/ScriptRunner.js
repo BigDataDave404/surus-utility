@@ -164,9 +164,9 @@ const SurusUtilities = () => {
     const details = result.details || {};
     return {
       status: result.status || details.status?.description || "",
-      id: details.id || "",
-      name: details.name || "",
-      statusValue: details.status?.code?.value || "",
+      id: details.id || result.id || "",
+      name: details.name || result.id || "",
+      statusValue: details.status?.code?.value || result.id || "",
       address:
         Array.isArray(details.address) && details.address[0]
           ? [
@@ -179,18 +179,18 @@ const SurusUtilities = () => {
               .filter(Boolean)
               .join(", ")
           : "",
-      email: details.email?.email || "",
+      email: details.email?.email || result.email?.email "",
       phone:
         Array.isArray(details.phone) && details.phone[0]
           ? details.phone[0].phone || details.phone[0].number || ""
           : "",
       mcNumber: details.mcNumber || result.mcNumber || "",
-      dotNumber: details.dotNumber || "",
-      authority: details.authority
+      dotNumber: details.dotNumber || result.dotNumber || "",
+      authority: details.authority || result.authority
         ? {
             commonAuthority: details.authority.commonAuthority || "",
             contractAuthority: details.authority.contractAuthority || "",
-            brokerAuthority: details.authority.brokerAuthority || "",
+            brokerAuthority: details.authority.brokerAuthority || result.authority.brokerAuthority ||"",
           }
         : { commonAuthority: "", contractAuthority: "", brokerAuthority: "" },
     };
