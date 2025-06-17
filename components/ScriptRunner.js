@@ -37,6 +37,13 @@ const SurusUtilities = () => {
         "Enter MC Numbers (one per line excluding MC):\n123456\n789012",
       endpoint: "/api/tag-carrier",
     },
+    "check-mc": {
+      name: "Check MC Status",
+      description: "Reference MC numbers in Turvo and MCP",
+      placeholder:
+        "Enter MC Numbers (one per line excluding MC):\n123456\n789012",
+      endpoint: "/api/check-mc",
+    },
   };
 
   const handleSubmit = async () => {
@@ -112,7 +119,8 @@ const SurusUtilities = () => {
           <div className="su-header">
             <h2 className="su-title">Surus Utilities</h2>
             <p className="su-subtitle">
-              Manage DAT Rates, Target Rates, and Carrier DNU Tags
+              Manage DAT Rates, Target Rates, Carrier DNU Tags and Carrier MC
+              Status
             </p>
           </div>
 
