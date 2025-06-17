@@ -6,7 +6,7 @@ async function getTurvoToken() {
   const response = await fetch(
     "https://publicapi.turvo.com/v1/oauth/token?client_id=publicapi&client_secret=secret",
     {
-      method: "GET",
+      method: "POST",
       headers: {
         "Content-Type": "application/json",
         "x-api-key": process.env.PRODUCTION_API_KEY,
