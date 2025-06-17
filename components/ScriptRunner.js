@@ -179,7 +179,7 @@ const SurusUtilities = () => {
               .filter(Boolean)
               .join(", ")
           : "",
-      email: details.email?.email || result.email?.email "",
+      email: details.email?.email || result.email?.email || "",
       phone:
         Array.isArray(details.phone) && details.phone[0]
           ? details.phone[0].phone || details.phone[0].number || ""
