@@ -215,13 +215,17 @@ const SurusUtilities = () => {
                   <pre>
                     {results.map((result, index) => (
                       <div key={index} className="su-result-row">
-                        {result.mcNumber
-                          ? `MC ${result.mcNumber}: ${
-                              result.status === "success" ? "✅" : "❌"
-                            } ${result.message}`
-                          : typeof result === "object"
-                          ? JSON.stringify(result, null, 2)
-                          : result}
+                        {result.status === "success" && result.details ? (
+                          <>
+                            <span>MC {result.mcNumber}: ✅</span>
+                            <pre>{JSON.stringify(result.details, null, 2)}</pre>
+                          </>
+                        ) : (
+                          <span>
+                            MC {result.mcNumber}: ❌{" "}
+                            {result.message || "No details found"}
+                          </span>
+                        )}
                       </div>
                     ))}
                   </pre>

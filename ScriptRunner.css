@@ -75,10 +75,10 @@ body {
 .su-textarea {
   width: 100%;
   height: 18rem;
-  padding: 0px;
-  padding-left: 20px;
-  padding-top: 20px;
+  padding-top: 4px;
   padding-right: 0px;
+  padding-bottom: 4px;
+  padding-left: 0px;
   font-size: 1rem;
   border-radius: 12px;
   outline: none;
