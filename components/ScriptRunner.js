@@ -112,6 +112,38 @@ const SurusUtilities = () => {
     setDurationSeconds(null);
   };
 
+  // Helper to extract key fields from check-mc details
+  function extractCheckMCFields(details) {
+    if (!details || typeof details !== "object") return {};
+    return {
+      status: details.status?.description || details.status?.value || "",
+      id: details.id || "",
+      name: details.name || "",
+      statusValue: details.status?.code?.value || "",
+      address:
+        Array.isArray(details.address) && details.address[0]
+          ? `${details.address[0].line1 || ""}, ${
+              details.address[0].city || ""
+            }, ${details.address[0].state || ""} ${
+              details.address[0].zip || ""
+            }`.replace(/^, | ,/g, "")
+          : "",
+      phone:
+        Array.isArray(details.phone) && details.phone[0]
+          ? details.phone[0].phone || details.phone[0].number || ""
+          : "",
+      mcNumber: details.mcNumber || "",
+      dotNumber: details.dotNumber || "",
+      authority: details.authority
+        ? {
+            commonAuthority: details.authority.commonAuthority || "",
+            contractAuthority: details.authority.contractAuthority || "",
+            brokerAuthority: details.authority.brokerAuthority || "",
+          }
+        : { commonAuthority: "", contractAuthority: "", brokerAuthority: "" },
+    };
+  }
+
   return (
     <div className="su-bg">
       <div className="su-container">
@@ -213,21 +245,114 @@ const SurusUtilities = () => {
 
                 <div className="su-results">
                   <pre>
-                    {results.map((result, index) => (
-                      <div key={index} className="su-result-row">
-                        {result.status === "success" && result.details ? (
-                          <>
-                            <span>MC {result.mcNumber}: ✅</span>
-                            <pre>{JSON.stringify(result.details, null, 2)}</pre>
-                          </>
-                        ) : (
-                          <span>
-                            MC {result.mcNumber}: ❌{" "}
-                            {result.message || "No details found"}
-                          </span>
-                        )}
-                      </div>
-                    ))}
+                    {results.map((result, index) => {
+                      // DAT RATES: legacy string or object with lane info
+                      if (selectedScript === "dat-rates") {
+                        if (typeof result === "string") {
+                          return (
+                            <div key={index} className="su-result-row">
+                              {result}
+                            </div>
+                          );
+                        }
+                        if (typeof result === "object") {
+                          return (
+                            <div key={index} className="su-result-row">
+                              {Object.values(result).join(", ")}
+                            </div>
+                          );
+                        }
+                      }
+
+                      // TAG-CARRIER or TARGET-RATE-TAG: simple status
+                      if (
+                        selectedScript === "tag-carrier" ||
+                        selectedScript === "target-rate-tag"
+                      ) {
+                        if (typeof result === "string") {
+                          const isSuccess = /success/i.test(result);
+                          return (
+                            <div key={index} className="su-result-row">
+                              <span>
+                                {isSuccess ? "✅" : "❌"} {result}
+                              </span>
+                            </div>
+                          );
+                        }
+                        if (typeof result === "object") {
+                          const isSuccess =
+                            result.status === "success" ||
+                            /success/i.test(result.message);
+                          return (
+                            <div key={index} className="su-result-row">
+                              <span>
+                                {isSuccess ? "✅" : "❌"} MC{" "}
+                                {result.mcNumber || result.shipmentID || ""}:{" "}
+                                {result.message || ""}
+                              </span>
+                            </div>
+                          );
+                        }
+                      }
+
+                      // CHECK-MC: show selected fields
+                      if (selectedScript === "check-mc") {
+                        if (typeof result === "object" && result.details) {
+                          const fields = extractCheckMCFields(result.details);
+                          return (
+                            <div key={index} className="su-result-row">
+                              <div>
+                                <b>Status:</b> {fields.status}
+                              </div>
+                              <div>
+                                <b>ID:</b> {fields.id}
+                              </div>
+                              <div>
+                                <b>Name:</b> {fields.name}
+                              </div>
+                              <div>
+                                <b>Status Value:</b> {fields.statusValue}
+                              </div>
+                              <div>
+                                <b>Address:</b> {fields.address}
+                              </div>
+                              <div>
+                                <b>Phone:</b> {fields.phone}
+                              </div>
+                              <div>
+                                <b>MC Number:</b> {fields.mcNumber}
+                              </div>
+                              <div>
+                                <b>DOT Number:</b> {fields.dotNumber}
+                              </div>
+                              <div>
+                                <b>Authority:</b> Common:{" "}
+                                {fields.authority.commonAuthority}, Contract:{" "}
+                                {fields.authority.contractAuthority}, Broker:{" "}
+                                {fields.authority.brokerAuthority}
+                              </div>
+                            </div>
+                          );
+                        } else if (typeof result === "object") {
+                          // error case
+                          return (
+                            <div key={index} className="su-result-row">
+                              <span>
+                                ❌ MC {result.mcNumber || ""}:{" "}
+                                {result.message || "No details found"}
+                              </span>
+                            </div>
+                          );
+                        }
+                      }
+
+                      // Fallback
+                      return (
+                        <div key={index} className="su-result-row">
+                          <span>❓ {String(result)}</span>
+                        </div>
+                      );
+                    })}
                   </pre>
                 </div>
               </div>
