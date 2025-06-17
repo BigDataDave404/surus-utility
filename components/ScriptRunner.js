@@ -163,27 +163,28 @@ const SurusUtilities = () => {
   function extractCheckMCFields(result) {
     const details = result.details || {};
     return {
-      status:
-        result.Status ||
-        details.status?.description ||
-        details.status?.value ||
-        "",
+      status: result.status || details.status?.description || "",
       id: details.id || "",
       name: details.name || "",
       statusValue: details.status?.code?.value || "",
       address:
         Array.isArray(details.address) && details.address[0]
-          ? `${details.address[0].line1 || ""}, ${
-              details.address[0].city || ""
-            }, ${details.address[0].state || ""} ${
-              details.address[0].zip || ""
-            }`.replace(/^, | ,/g, "")
+          ? [
+              details.address[0].line1,
+              details.address[0].line2,
+              details.address[0].city,
+              details.address[0].state,
+              details.address[0].zip,
+            ]
+              .filter(Boolean)
+              .join(", ")
           : "",
+      email: details.email?.email || "",
       phone:
         Array.isArray(details.phone) && details.phone[0]
           ? details.phone[0].phone || details.phone[0].number || ""
           : "",
-      mcNumber: details.mcNumber || "",
+      mcNumber: details.mcNumber || result.mcNumber || "",
       dotNumber: details.dotNumber || "",
       authority: details.authority
         ? {
@@ -362,10 +363,13 @@ const SurusUtilities = () => {
                                 <b>Name:</b> {fields.name}
                               </div>
                               <div>
-                                <b>Status Value:</b> {fields.statusValue}
+                                <b>Carrier Status:</b> {fields.statusValue}
                               </div>
                               <div>
                                 <b>Address:</b> {fields.address}
+                              </div>
+                              <div>
+                                <b>Email:</b> {fields.email}
                               </div>
                               <div>
                                 <b>Phone:</b> {fields.phone}
