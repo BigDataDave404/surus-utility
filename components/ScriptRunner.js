@@ -163,9 +163,9 @@ const SurusUtilities = () => {
   function extractCheckMCFields(result) {
     const details = result.details || {};
     return {
-      status: result.Status || details.Status?.description || "N/A",
-      id: details.id || result.id || "N/A",
-      name: details.name || result.name || "N/A",
+      status: result.status || details.status?.description || "N/A",
+      id: result.details.id || result.id || "N/A",
+      name: result.details.name || details.result.name || "N/A",
       statusValue: details.status?.code?.value || result.id || "N/A",
       carrierStatus: details.status?.description || "N/A",
       address:
