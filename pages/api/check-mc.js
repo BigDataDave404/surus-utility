@@ -131,7 +131,7 @@ export default async function handler(req, res) {
           };
         }
         const details = await detailsResponse.json();
-        return { mcNumber, status: "success", details };
+        return { mcNumber, status: "SUCCESS DUDE", details };
       } catch (error) {
         return { mcNumber, status: "error", message: error.message };
       }

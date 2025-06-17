@@ -163,15 +163,15 @@ const SurusUtilities = () => {
   function extractCheckMCFields(result) {
     const details = result.details || {};
     return {
-      status: result.status || details.status?.description || "",
-      id: details.id || result.id || "",
-      name: details.name || result.id || "",
-      statusValue: details.status?.code?.value || result.id || "",
+      status: result.Status || details.Status?.description || "N/A",
+      id: details.id || result.id || "N/A",
+      name: details.name || result.name || "N/A",
+      statusValue: details.status?.code?.value || result.id || "N/A",
+      carrierStatus: details.status?.description || "N/A",
       address:
         Array.isArray(details.address) && details.address[0]
           ? [
               details.address[0].line1,
-              details.address[0].line2,
               details.address[0].city,
               details.address[0].state,
               details.address[0].zip,
@@ -186,13 +186,17 @@ const SurusUtilities = () => {
           : "",
       mcNumber: details.mcNumber || result.mcNumber || "",
       dotNumber: details.dotNumber || result.dotNumber || "",
-      authority: details.authority || result.authority
-        ? {
-            commonAuthority: details.authority.commonAuthority || "",
-            contractAuthority: details.authority.contractAuthority || "",
-            brokerAuthority: details.authority.brokerAuthority || result.authority.brokerAuthority ||"",
-          }
-        : { commonAuthority: "", contractAuthority: "", brokerAuthority: "" },
+      authority:
+        details.authority || result.authority
+          ? {
+              commonAuthority: details.authority.commonAuthority || "",
+              contractAuthority: details.authority.contractAuthority || "",
+              brokerAuthority:
+                details.authority.brokerAuthority ||
+                result.authority.brokerAuthority ||
+                "",
+            }
+          : { commonAuthority: "", contractAuthority: "", brokerAuthority: "" },
     };
   }
 
@@ -363,7 +367,7 @@ const SurusUtilities = () => {
                                 <b>Name:</b> {fields.name}
                               </div>
                               <div>
-                                <b>Carrier Status:</b> {fields.statusValue}
+                                <b>Carrier Status:</b> {fields.carrierStatus}
                               </div>
                               <div>
                                 <b>Address:</b> {fields.address}
