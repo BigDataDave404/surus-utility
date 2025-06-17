@@ -24,7 +24,6 @@ async function getTurvoToken() {
   return data.access_token;
 }
 
-// Recursive function to find carrier ID
 function findCarrierID(obj) {
   if (typeof obj !== "object" || obj === null) return null;
   if ("id" in obj && "mcNumber" in obj && "name" in obj) return obj.id;
@@ -37,7 +36,15 @@ function findCarrierID(obj) {
   return null;
 }
 
-// Concurrency limiter
+function formatAddress(addr) {
+  if (!addr) return "N/A";
+  return `${addr.line1 || ""}, ${addr.city || ""}, ${addr.state || ""}, ${
+    addr.zip || ""
+  }, ${addr.country || ""}`
+    .replace(/,\s*,/g, ", ")
+    .replace(/,\s*$/, "");
+}
+
 async function runWithConcurrency(tasks, limit, delayMs) {
   const results = [];
   let i = 0;
@@ -53,54 +60,6 @@ async function runWithConcurrency(tasks, limit, delayMs) {
   return results;
 }
 
-// Format output cleanly for the UI
-function formatAddress(addr) {
-  if (!addr) return "N/A";
-  return `${addr.line1 || ""}, ${addr.city || ""}, ${addr.state || ""}, ${
-    addr.zip || ""
-  }, ${addr.country || ""}`;
-}
-
-function extractCarrierFields(result) {
-  const carrier = result?.details?.details;
-
-  if (!carrier) {
-    console.error("No carrier details found:", result);
-    return {
-      mcNumber: result.mcNumber,
-      status: "error",
-      message: "Carrier details missing",
-    };
-  }
-
-  return {
-    mcNumber: result.mcNumber,
-    status: result.status,
-    name: carrier.name || "N/A",
-    carrierStatus: carrier.status?.description || "Unknown",
-    mcNumberConfirmed: carrier.mcNumber || "N/A",
-    dotNumber: carrier.dotNumber || "N/A",
-    address: formatAddress(carrier.address?.find((addr) => addr.isPrimary)),
-    equipment:
-      carrier.equipment
-        ?.map((e) => `${e.qty}x ${e.size?.value} ${e.type?.value}`)
-        .join(", ") || "N/A",
-    insurance:
-      carrier.insurance
-        ?.map(
-          (i) =>
-            `${i.type?.value}: $${i.amount.toLocaleString()} (Exp: ${
-              i.expirationDate
-            })`
-        )
-        .join("; ") || "N/A",
-    commonAuthority: carrier.authority?.commonAuthority || "N/A",
-    contractAuthority: carrier.authority?.contractAuthority || "N/A",
-    brokerAuthority: carrier.authority?.brokerAuthority || "N/A",
-  };
-}
-
-// API handler
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
@@ -118,10 +77,9 @@ export default async function handler(req, res) {
         .json({ error: "inputData must be a non-empty array" });
     }
 
-    // Task for each MC number
     const tasks = inputData.map((mcNumber) => async () => {
       try {
-        const carrierResponse = await fetch(
+        const carrierRes = await fetch(
           `https://publicapi.turvo.com/v1/carriers/list?mcNumber[eq]=${mcNumber}`,
           {
             method: "GET",
@@ -132,26 +90,26 @@ export default async function handler(req, res) {
             },
           }
         );
-        const carrierContentType =
-          carrierResponse.headers.get("content-type") || "";
-        if (
-          !carrierResponse.ok ||
-          !carrierContentType.includes("application/json")
-        ) {
-          const text = await carrierResponse.text();
+        if (!carrierRes.ok) {
+          const text = await carrierRes.text();
           return {
             mcNumber,
             status: "error",
             message: `Carrier lookup failed - ${text}`,
           };
         }
-        const carrierData = await carrierResponse.json();
+
+        const carrierData = await carrierRes.json();
         const carrierID = findCarrierID(carrierData);
         if (!carrierID) {
-          return { mcNumber, status: "error", message: "Carrier not found" };
+          return {
+            mcNumber,
+            status: "error",
+            message: "Carrier not found",
+          };
         }
 
-        const detailsResponse = await fetch(
+        const detailsRes = await fetch(
           `https://publicapi.turvo.com/v1/carriers/${carrierID}`,
           {
             method: "GET",
@@ -162,39 +120,61 @@ export default async function handler(req, res) {
             },
           }
         );
-        const detailsContentType =
-          detailsResponse.headers.get("content-type") || "";
-        if (
-          !detailsResponse.ok ||
-          !detailsContentType.includes("application/json")
-        ) {
-          const text = await detailsResponse.text();
+        if (!detailsRes.ok) {
+          const text = await detailsRes.text();
           return {
             mcNumber,
             status: "error",
             message: `Details fetch failed - ${text}`,
           };
         }
-        const details = await detailsResponse.json();
-        return { mcNumber, status: "SUCCESS DUDE", details };
+
+        const data = await detailsRes.json();
+        const c = data.details;
+
+        return {
+          mcNumber,
+          status: "success",
+          name: c.name || "N/A",
+          carrierStatus: c.status?.description || "Unknown",
+          mcNumberConfirmed: c.mcNumber || "N/A",
+          dotNumber: c.dotNumber || "N/A",
+          address: formatAddress(c.address?.find((a) => a.isPrimary)),
+          equipment:
+            c.equipment
+              ?.map((e) => `${e.qty}x ${e.size?.value} ${e.type?.value}`)
+              .join(", ") || "N/A",
+          insurance:
+            c.insurance
+              ?.map(
+                (i) =>
+                  `${i.type?.value}: $${Number(
+                    i.amount
+                  ).toLocaleString()} (Exp: ${i.expirationDate})`
+              )
+              .join("; ") || "N/A",
+          commonAuthority: c.authority?.commonAuthority ?? "N/A",
+          contractAuthority: c.authority?.contractAuthority ?? "N/A",
+          brokerAuthority: c.authority?.brokerAuthority ?? "N/A",
+        };
       } catch (error) {
-        return { mcNumber, status: "error", message: error.message };
+        return {
+          mcNumber,
+          status: "error",
+          message: error.message,
+        };
       }
     });
 
     const resultsSettled = await runWithConcurrency(tasks, 39, 1000);
-    const resultsRaw = resultsSettled.map((r) =>
+    const results = resultsSettled.map((r) =>
       r.status === "fulfilled"
         ? r.value
         : { status: "error", message: r.reason }
     );
 
-    // Transform results for UI
-    const results = resultsRaw.map(extractCarrierFields);
-
     const endTime = Date.now();
     const durationSeconds = ((endTime - startTime) / 1000).toFixed(2);
-
     res.status(200).json({ results, durationSeconds });
   } catch (error) {
     res.status(500).json({ error: error.message });

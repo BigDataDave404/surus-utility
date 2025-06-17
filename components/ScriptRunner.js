@@ -91,49 +91,29 @@ const SurusUtilities = () => {
   const downloadResults = () => {
     let csvContent = "";
     if (selectedScript === "check-mc") {
-      // CSV header for check-mc
       csvContent = [
-        "MC Number,Status,ID,Name,Carrier Status,Address,Phone,,DOT Number,Common Authority,Contract Authority,Broker Authority",
+        "MC Number,Status,Name,Carrier Status,Address,DOT Number,Common Authority,Contract Authority,Broker Authority",
         ...results.map((result) => {
-          if (typeof result === "object" && result.details) {
-            const fields = extractCheckMCFields(result);
+          if (typeof result === "object") {
             return [
-              fields.mcNumber,
-              fields.status,
-              fields.id,
-              fields.name,
-              fields.carrierStatus,
-              fields.address,
-              fields.phone,
-              fields.dotNumber,
-              fields.authority.commonAuthority,
-              fields.authority.contractAuthority,
-              fields.authority.brokerAuthority,
+              result.mcNumber,
+              result.status,
+              result.name,
+              result.carrierStatus,
+              result.address,
+              result.dotNumber,
+              result.commonAuthority,
+              result.contractAuthority,
+              result.brokerAuthority,
             ]
               .map((v) => (v ? String(v).replace(/,/g, " ") : ""))
               .join(",");
-          } else if (typeof result === "object") {
-            // error case
-            return [
-              result.mcNumber || "",
-              result.status || "error",
-              "",
-              "",
-              "",
-              "",
-              "",
-              "",
-              "",
-              "",
-              "",
-              result.message || "No details found",
-            ].join(",");
+          } else {
+            return "Invalid result";
           }
-          return "";
         }),
       ].join("\n");
     } else {
-      // Fallback for other scripts: join all object values or use string
       csvContent = results
         .map((result) =>
           typeof result === "object" ? Object.values(result).join(",") : result
@@ -158,49 +138,6 @@ const SurusUtilities = () => {
     setDurationSeconds(null);
   };
 
-  // Helper to extract key fields from check-mc details
-  function extractCheckMCFields(result) {
-    const carrier = result?.details?.details;
-
-    if (!carrier) {
-      console.error("No carrier details found in result:", result);
-      return {
-        mcNumber: result.mcNumber || "N/A",
-        status: "error",
-        message: "Carrier details missing",
-      };
-    }
-
-    return {
-      mcNumber: result.mcNumber || "N/A",
-      status: result.status || "Unknown",
-      id: carrier.id || "N/A",
-      name: carrier.name || "N/A",
-      carrierStatus: carrier.status?.description || "Unknown",
-      mcNumberConfirmed: carrier.mcNumber || "N/A",
-      dotNumber: carrier.dotNumber || "N/A",
-      address: formatAddress(carrier.address?.find((addr) => addr.isPrimary)),
-      equipment: carrier.equipment
-        ?.map((e) => `${e.qty}x ${e.size?.value} ${e.type?.value}`)
-        .join(", "),
-      insurance: carrier.insurance
-        ?.map(
-          (i) =>
-            `${i.type?.value}: $${i.amount.toLocaleString()} (Exp: ${
-              i.expirationDate
-            })`
-        )
-        .join("; "),
-      phone: carrier.phone || "N/A", // add if expected
-      authority: carrier.authority || {}, // add if expected, or handle safely in CSV
-    };
-  }
-
-  function formatAddress(addr) {
-    if (!addr) return "N/A";
-    return `${addr.line1}, ${addr.city}, ${addr.state}, ${addr.zip}, ${addr.country}`;
-  }
-
   return (
     <div className="su-bg">
       <div className="su-container">
@@ -215,7 +152,6 @@ const SurusUtilities = () => {
 
           <div className="su-content">
             <div>
-              {/* <label className="su-label">Choose Script</label> */}
               <div className="su-select-wrapper">
                 <select
                   value={selectedScript}
@@ -235,9 +171,6 @@ const SurusUtilities = () => {
                     </option>
                   ))}
                 </select>
-                {/* <span className="su-chevron">
-                  <ChevronDown size={24} color="#888" />
-                </span> */}
               </div>
               {selectedScript && (
                 <p className="su-description">
@@ -303,89 +236,67 @@ const SurusUtilities = () => {
                 <div className="su-results">
                   <pre>
                     {results.map((result, index) => {
-                      // DAT RATES: legacy string or object with lane info
                       if (selectedScript === "dat-rates") {
-                        if (typeof result === "string") {
-                          return (
-                            <div key={index} className="su-result-row">
-                              {result}
-                            </div>
-                          );
-                        }
-                        if (typeof result === "object") {
-                          return (
-                            <div key={index} className="su-result-row">
-                              {Object.values(result).join(", ")}
-                            </div>
-                          );
-                        }
+                        return (
+                          <div key={index} className="su-result-row">
+                            {typeof result === "object"
+                              ? Object.values(result).join(", ")
+                              : result}
+                          </div>
+                        );
                       }
 
-                      // TAG-CARRIER or TARGET-RATE-TAG: simple status
                       if (
                         selectedScript === "tag-carrier" ||
                         selectedScript === "target-rate-tag"
                       ) {
-                        if (typeof result === "string") {
-                          const isSuccess = /success/i.test(result);
-                          return (
-                            <div key={index} className="su-result-row">
-                              <span>
-                                {isSuccess ? "✅" : "❌"} {result}
-                              </span>
-                            </div>
-                          );
-                        }
-                        if (typeof result === "object") {
-                          const isSuccess =
-                            result.status === "success" ||
-                            /success/i.test(result.message);
-                          return (
-                            <div key={index} className="su-result-row">
-                              <span>
-                                {isSuccess ? "✅" : "❌"} MC{" "}
-                                {result.mcNumber || result.shipmentID || ""}:{" "}
-                                {result.message || ""}
-                              </span>
-                            </div>
-                          );
-                        }
+                        const isSuccess =
+                          typeof result === "string"
+                            ? /success/i.test(result)
+                            : result.status === "success" ||
+                              /success/i.test(result.message);
+                        return (
+                          <div key={index} className="su-result-row">
+                            <span>
+                              {isSuccess ? "✅" : "❌"} MC{" "}
+                              {result.mcNumber || result.shipmentID || ""}:{" "}
+                              {result.message || result}
+                            </span>
+                          </div>
+                        );
                       }
 
-                      // CHECK-MC: show selected fields
                       if (selectedScript === "check-mc") {
-                        console.log("check-mc result:", result);
-                        if (typeof result === "object" && result.details) {
-                          const fields = extractCheckMCFields(result);
+                        if (
+                          typeof result === "object" &&
+                          result.status !== "error"
+                        ) {
                           return (
                             <div key={index} className="su-result-row">
                               <div>
-                                <b>Status:</b> {fields.status}
+                                <b>Status:</b> {result.status}
                               </div>
                               <div>
-                                <b>Name:</b> {fields.name}
+                                <b>Name:</b> {result.name}
                               </div>
                               <div>
-                                <b>Carrier Status:</b> {fields.carrierStatus}
+                                <b>Carrier Status:</b> {result.carrierStatus}
                               </div>
                               <div>
-                                <b>MC Number:</b> {fields.mcNumber}
+                                <b>MC Number:</b> {result.mcNumber}
                               </div>
                               <div>
-                                <b>DOT Number:</b> {fields.dotNumber}
+                                <b>DOT Number:</b> {result.dotNumber}
                               </div>
                               <div>
-                                <b>Address:</b> {fields.address}
+                                <b>Address:</b> {result.address}
                               </div>
                               <div>
-                                <b>ID:</b> {fields.id}
+                                <b>ID:</b> {result.id || "N/A"}
                               </div>
-                              {/* For debugging, you can also log or display the raw address object */}
-                              {/* <pre>{JSON.stringify(fields.addressObj, null, 2)}</pre> */}
                             </div>
                           );
-                        } else if (typeof result === "object") {
-                          // error case
+                        } else {
                           return (
                             <div key={index} className="su-result-row">
                               <span>
@@ -397,7 +308,6 @@ const SurusUtilities = () => {
                         }
                       }
 
-                      // Fallback
                       return (
                         <div key={index} className="su-result-row">
                           <span>❓ {String(result)}</span>
