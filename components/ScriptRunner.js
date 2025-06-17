@@ -161,15 +161,17 @@ const SurusUtilities = () => {
 
   // Helper to extract key fields from check-mc details
   function extractCheckMCFields(result) {
-    const details = result.details || {};
+    // The actual carrier info is in result.details.details
+    const details =
+      result.details && result.details.details ? result.details.details : {};
     const address =
       details.address && details.address[0] ? details.address[0] : {};
     return {
-      status: result.Status || "N/A",
+      status: result.status || result.details?.Status || "N/A",
+      id: details.id || "N/A",
       name: details.name || "N/A",
-      carrierStatus: details.status?.description || "N/A",
-      mcNumber: details.mcNumber || result.mcNumber || "N/A",
-      dotNumber: details.dotNumber || "N/A",
+      statusValue:
+        details.status?.description || details.status?.code?.value || "N/A",
       address: [
         address.line1,
         address.line2,
@@ -179,7 +181,19 @@ const SurusUtilities = () => {
       ]
         .filter(Boolean)
         .join(", "),
-      addressObj: address, // for debugging or advanced display
+      phone:
+        Array.isArray(details.phone) && details.phone[0]
+          ? details.phone[0].phone || details.phone[0].number || ""
+          : "",
+      mcNumber: details.mcNumber || result.mcNumber || "N/A",
+      dotNumber: details.dotNumber || "N/A",
+      authority: details.authority
+        ? {
+            commonAuthority: details.authority.commonAuthority || "",
+            contractAuthority: details.authority.contractAuthority || "",
+            brokerAuthority: details.authority.brokerAuthority || "",
+          }
+        : { commonAuthority: "", contractAuthority: "", brokerAuthority: "" },
     };
   }
 
