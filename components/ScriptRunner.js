@@ -162,41 +162,24 @@ const SurusUtilities = () => {
   // Helper to extract key fields from check-mc details
   function extractCheckMCFields(result) {
     const details = result.details || {};
+    const address =
+      details.address && details.address[0] ? details.address[0] : {};
     return {
-      status: result.status || details.status?.description || "N/A",
-      id: result.details.id || result.id || "N/A",
-      name: result.details.name || details.result.name || "N/A",
-      statusValue: details.status?.code?.value || result.id || "N/A",
+      status: result.Status || "N/A",
+      name: details.name || "N/A",
       carrierStatus: details.status?.description || "N/A",
-      address:
-        Array.isArray(details.address) && details.address[0]
-          ? [
-              details.address[0].line1,
-              details.address[0].city,
-              details.address[0].state,
-              details.address[0].zip,
-            ]
-              .filter(Boolean)
-              .join(", ")
-          : "",
-      email: details.email?.email || result.email?.email || "",
-      phone:
-        Array.isArray(details.phone) && details.phone[0]
-          ? details.phone[0].phone || details.phone[0].number || ""
-          : "",
-      mcNumber: details.mcNumber || result.mcNumber || "",
-      dotNumber: details.dotNumber || result.dotNumber || "",
-      authority:
-        details.authority || result.authority
-          ? {
-              commonAuthority: details.authority.commonAuthority || "",
-              contractAuthority: details.authority.contractAuthority || "",
-              brokerAuthority:
-                details.authority.brokerAuthority ||
-                result.authority.brokerAuthority ||
-                "",
-            }
-          : { commonAuthority: "", contractAuthority: "", brokerAuthority: "" },
+      mcNumber: details.mcNumber || result.mcNumber || "N/A",
+      dotNumber: details.dotNumber || "N/A",
+      address: [
+        address.line1,
+        address.line2,
+        address.city,
+        address.state,
+        address.zip,
+      ]
+        .filter(Boolean)
+        .join(", "),
+      addressObj: address, // for debugging or advanced display
     };
   }
 
@@ -353,6 +336,7 @@ const SurusUtilities = () => {
 
                       // CHECK-MC: show selected fields
                       if (selectedScript === "check-mc") {
+                        console.log("check-mc result:", result);
                         if (typeof result === "object" && result.details) {
                           const fields = extractCheckMCFields(result);
                           return (
@@ -361,22 +345,10 @@ const SurusUtilities = () => {
                                 <b>Status:</b> {fields.status}
                               </div>
                               <div>
-                                <b>ID:</b> {fields.id}
-                              </div>
-                              <div>
                                 <b>Name:</b> {fields.name}
                               </div>
                               <div>
                                 <b>Carrier Status:</b> {fields.carrierStatus}
-                              </div>
-                              <div>
-                                <b>Address:</b> {fields.address}
-                              </div>
-                              <div>
-                                <b>Email:</b> {fields.email}
-                              </div>
-                              <div>
-                                <b>Phone:</b> {fields.phone}
                               </div>
                               <div>
                                 <b>MC Number:</b> {fields.mcNumber}
@@ -385,11 +357,10 @@ const SurusUtilities = () => {
                                 <b>DOT Number:</b> {fields.dotNumber}
                               </div>
                               <div>
-                                <b>Authority:</b> Common:{" "}
-                                {fields.authority.commonAuthority}, Contract:{" "}
-                                {fields.authority.contractAuthority}, Broker:{" "}
-                                {fields.authority.brokerAuthority}
+                                <b>Address:</b> {fields.address}
                               </div>
+                              {/* For debugging, you can also log or display the raw address object */}
+                              {/* <pre>{JSON.stringify(fields.addressObj, null, 2)}</pre> */}
                             </div>
                           );
                         } else if (typeof result === "object") {
