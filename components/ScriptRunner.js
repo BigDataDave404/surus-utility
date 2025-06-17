@@ -237,7 +237,7 @@ const SurusUtilities = () => {
                 </div>
 
                 <div className="su-results">
-                  <pre>
+                  <div className="su-results-content">
                     {results.map((result, index) => {
                       if (selectedScript === "dat-rates") {
                         return (
@@ -323,7 +323,7 @@ const SurusUtilities = () => {
                         </div>
                       );
                     })}
-                  </pre>
+                  </div>
                 </div>
               </div>
             )}
