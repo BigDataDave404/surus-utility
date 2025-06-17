@@ -134,12 +134,15 @@ export default async function handler(req, res) {
 
         return {
           mcNumber,
-          status: "success",
+          status: "Success",
+          id: c.id || "N/A",
           name: c.name || "N/A",
           carrierStatus: c.status?.description || "Unknown",
           mcNumberConfirmed: c.mcNumber || "N/A",
           dotNumber: c.dotNumber || "N/A",
           address: formatAddress(c.address?.find((a) => a.isPrimary)),
+          email: c.email || "N/A",
+          phone: c.phone || "N/A",
           equipment:
             c.equipment
               ?.map((e) => `${e.qty}x ${e.size?.value} ${e.type?.value}`)
