@@ -161,39 +161,51 @@ const SurusUtilities = () => {
 
   // Helper to extract key fields from check-mc details
   function extractCheckMCFields(result) {
-    // The actual carrier info is in result.details.details
-    const details =
-      result.details && result.details.details ? result.details.details : {};
-    const address =
-      details.address && details.address[0] ? details.address[0] : {};
+    const mainDetails = result.details?.details || {};
+    const address = Array.isArray(mainDetails.address)
+      ? mainDetails.address[0] || {}
+      : {};
+
     return {
-      status: result.status || result.details?.Status || "N/A",
-      id: details.id || "N/A",
-      name: details.name || "N/A",
+      // Top-level status (e.g., "SUCCESS DUDE")
+      status: result.status || "N/A",
+
+      // Carrier ID
+      id: mainDetails.id || "N/A",
+
+      // Carrier name
+      name: mainDetails.name || "N/A",
+
+      // Status from nested structure (description or fallback)
       statusValue:
-        details.status?.description || details.status?.code?.value || "N/A",
-      address: [
-        address.line1,
-        address.line2,
-        address.city,
-        address.state,
-        address.zip,
-      ]
+        mainDetails.status?.description ||
+        mainDetails.status?.code?.value ||
+        result.details?.Status ||
+        "N/A",
+
+      // Address composed from line1, city, state
+      address: [address.line1, address.city, address.state]
         .filter(Boolean)
         .join(", "),
+
+      // Phone number logic (if any available)
       phone:
-        Array.isArray(details.phone) && details.phone[0]
-          ? details.phone[0].phone || details.phone[0].number || ""
+        Array.isArray(mainDetails.phone) && mainDetails.phone[0]
+          ? mainDetails.phone[0].phone || mainDetails.phone[0].number || ""
           : "",
-      mcNumber: details.mcNumber || result.mcNumber || "N/A",
-      dotNumber: details.dotNumber || "N/A",
-      authority: details.authority
-        ? {
-            commonAuthority: details.authority.commonAuthority || "",
-            contractAuthority: details.authority.contractAuthority || "",
-            brokerAuthority: details.authority.brokerAuthority || "",
-          }
-        : { commonAuthority: "", contractAuthority: "", brokerAuthority: "" },
+
+      // MC number directly from result or mainDetails
+      mcNumber: mainDetails.mcNumber || result.mcNumber || "N/A",
+
+      // DOT number
+      dotNumber: mainDetails.dotNumber || "N/A",
+
+      // Authority breakdown
+      authority: {
+        commonAuthority: mainDetails.authority?.commonAuthority || "",
+        contractAuthority: mainDetails.authority?.contractAuthority || "",
+        brokerAuthority: mainDetails.authority?.brokerAuthority || "",
+      },
     };
   }
 
@@ -362,7 +374,7 @@ const SurusUtilities = () => {
                                 <b>Name:</b> {fields.name}
                               </div>
                               <div>
-                                <b>Carrier Status:</b> {fields.carrierStatus}
+                                <b>Carrier Status:</b> {fields.statusValue}
                               </div>
                               <div>
                                 <b>MC Number:</b> {fields.mcNumber}
@@ -372,6 +384,9 @@ const SurusUtilities = () => {
                               </div>
                               <div>
                                 <b>Address:</b> {fields.address}
+                              </div>
+                              <div>
+                                <b>ID:</b> {fields.id}
                               </div>
                               {/* For debugging, you can also log or display the raw address object */}
                               {/* <pre>{JSON.stringify(fields.addressObj, null, 2)}</pre> */}
