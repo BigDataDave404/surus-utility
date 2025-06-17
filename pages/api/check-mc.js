@@ -134,7 +134,7 @@ export default async function handler(req, res) {
 
         return {
           mcNumber,
-          status: "Success",
+          status: "Turvo Success",
           id: c.id || "N/A",
           name: c.name || "N/A",
           carrierStatus: c.status?.description || "Unknown",
@@ -183,3 +183,10 @@ export default async function handler(req, res) {
     res.status(500).json({ error: error.message });
   }
 }
+
+// MCP Script
+//
+///
+//
+//
+//
