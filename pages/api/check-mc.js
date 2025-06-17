@@ -1,6 +1,7 @@
 import dotenv from "dotenv";
 dotenv.config();
 
+// Fetch Turvo token
 async function getTurvoToken() {
   const response = await fetch(
     "https://publicapi.turvo.com/v1/oauth/token?client_id=publicapi&client_secret=secret",
@@ -23,10 +24,10 @@ async function getTurvoToken() {
   return data.access_token;
 }
 
+// Recursive function to find carrier ID
 function findCarrierID(obj) {
   if (typeof obj !== "object" || obj === null) return null;
   if ("id" in obj && "mcNumber" in obj && "name" in obj) return obj.id;
-
   for (let key in obj) {
     if (obj.hasOwnProperty(key)) {
       const result = findCarrierID(obj[key]);
@@ -36,26 +37,70 @@ function findCarrierID(obj) {
   return null;
 }
 
-// Concurrency limiter: runs up to 'limit' tasks in parallel, with delay between batches
+// Concurrency limiter
 async function runWithConcurrency(tasks, limit, delayMs) {
   const results = [];
   let i = 0;
   while (i < tasks.length) {
     const batch = tasks.slice(i, i + limit).map((fn) => fn());
-    // Wait for this batch to finish
-    // Use Promise.allSettled to capture all results
-    // eslint-disable-next-line no-await-in-loop
     const batchResults = await Promise.allSettled(batch);
     results.push(...batchResults);
     i += limit;
     if (i < tasks.length) {
-      // eslint-disable-next-line no-await-in-loop
       await new Promise((resolve) => setTimeout(resolve, delayMs));
     }
   }
   return results;
 }
 
+// Format output cleanly for the UI
+function formatAddress(addr) {
+  if (!addr) return "N/A";
+  return `${addr.line1 || ""}, ${addr.city || ""}, ${addr.state || ""}, ${
+    addr.zip || ""
+  }, ${addr.country || ""}`;
+}
+
+function extractCarrierFields(result) {
+  const carrier = result?.details?.details;
+
+  if (!carrier) {
+    console.error("No carrier details found:", result);
+    return {
+      mcNumber: result.mcNumber,
+      status: "error",
+      message: "Carrier details missing",
+    };
+  }
+
+  return {
+    mcNumber: result.mcNumber,
+    status: result.status,
+    name: carrier.name || "N/A",
+    carrierStatus: carrier.status?.description || "Unknown",
+    mcNumberConfirmed: carrier.mcNumber || "N/A",
+    dotNumber: carrier.dotNumber || "N/A",
+    address: formatAddress(carrier.address?.find((addr) => addr.isPrimary)),
+    equipment:
+      carrier.equipment
+        ?.map((e) => `${e.qty}x ${e.size?.value} ${e.type?.value}`)
+        .join(", ") || "N/A",
+    insurance:
+      carrier.insurance
+        ?.map(
+          (i) =>
+            `${i.type?.value}: $${i.amount.toLocaleString()} (Exp: ${
+              i.expirationDate
+            })`
+        )
+        .join("; ") || "N/A",
+    commonAuthority: carrier.authority?.commonAuthority || "N/A",
+    contractAuthority: carrier.authority?.contractAuthority || "N/A",
+    brokerAuthority: carrier.authority?.brokerAuthority || "N/A",
+  };
+}
+
+// API handler
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
@@ -66,16 +111,16 @@ export default async function handler(req, res) {
   try {
     const token = await getTurvoToken();
     const { inputData } = req.body;
+
     if (!Array.isArray(inputData) || inputData.length === 0) {
       return res
         .status(400)
         .json({ error: "inputData must be a non-empty array" });
     }
 
-    // Prepare tasks for all MC numbers
+    // Task for each MC number
     const tasks = inputData.map((mcNumber) => async () => {
       try {
-        // Get carrier ID by MC number
         const carrierResponse = await fetch(
           `https://publicapi.turvo.com/v1/carriers/list?mcNumber[eq]=${mcNumber}`,
           {
@@ -105,7 +150,7 @@ export default async function handler(req, res) {
         if (!carrierID) {
           return { mcNumber, status: "error", message: "Carrier not found" };
         }
-        // Get carrier details
+
         const detailsResponse = await fetch(
           `https://publicapi.turvo.com/v1/carriers/${carrierID}`,
           {
@@ -137,14 +182,15 @@ export default async function handler(req, res) {
       }
     });
 
-    // Run all tasks with a concurrency limit of 39 per second
     const resultsSettled = await runWithConcurrency(tasks, 39, 1000);
-    // Map to UI-friendly results
-    const results = resultsSettled.map((r) =>
+    const resultsRaw = resultsSettled.map((r) =>
       r.status === "fulfilled"
         ? r.value
         : { status: "error", message: r.reason }
     );
+
+    // Transform results for UI
+    const results = resultsRaw.map(extractCarrierFields);
 
     const endTime = Date.now();
     const durationSeconds = ((endTime - startTime) / 1000).toFixed(2);

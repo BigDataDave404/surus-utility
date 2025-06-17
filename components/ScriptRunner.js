@@ -93,7 +93,7 @@ const SurusUtilities = () => {
     if (selectedScript === "check-mc") {
       // CSV header for check-mc
       csvContent = [
-        "MC Number,Status,ID,Name,Status Value,Address,Phone,MC Number,DOT Number,Common Authority,Contract Authority,Broker Authority",
+        "MC Number,Status,ID,Name,Carrier Status,Address,Phone,MC Number,DOT Number,Common Authority,Contract Authority,Broker Authority",
         ...results.map((result) => {
           if (typeof result === "object" && result.details) {
             const fields = extractCheckMCFields(result);
@@ -102,7 +102,7 @@ const SurusUtilities = () => {
               fields.status,
               fields.id,
               fields.name,
-              fields.statusValue,
+              fields.carrierStatus,
               fields.address,
               fields.phone,
               fields.mcNumber,
@@ -161,52 +161,47 @@ const SurusUtilities = () => {
 
   // Helper to extract key fields from check-mc details
   function extractCheckMCFields(result) {
-    const mainDetails = result.details?.details || {};
-    const address = Array.isArray(mainDetails.address)
-      ? mainDetails.address[0] || {}
-      : {};
+    const carrier = result?.details?.details;
+
+    if (!carrier) {
+      console.error("No carrier details found in result:", result);
+      return {
+        mcNumber: result.mcNumber,
+        status: "error",
+        message: "Carrier details missing",
+      };
+    }
 
     return {
-      // Top-level status (e.g., "SUCCESS DUDE")
-      status: result.status || "N/A",
-
-      // Carrier ID
-      id: mainDetails.id || "N/A",
-
-      // Carrier name
-      name: mainDetails.name || "N/A",
-
-      // Status from nested structure (description or fallback)
-      statusValue:
-        mainDetails.status?.description ||
-        mainDetails.status?.code?.value ||
-        result.details?.Status ||
-        "N/A",
-
-      // Address composed from line1, city, state
-      address: [address.line1, address.city, address.state]
-        .filter(Boolean)
-        .join(", "),
-
-      // Phone number logic (if any available)
-      phone:
-        Array.isArray(mainDetails.phone) && mainDetails.phone[0]
-          ? mainDetails.phone[0].phone || mainDetails.phone[0].number || ""
-          : "",
-
-      // MC number directly from result or mainDetails
-      mcNumber: mainDetails.mcNumber || result.mcNumber || "N/A",
-
-      // DOT number
-      dotNumber: mainDetails.dotNumber || "N/A",
-
-      // Authority breakdown
-      authority: {
-        commonAuthority: mainDetails.authority?.commonAuthority || "",
-        contractAuthority: mainDetails.authority?.contractAuthority || "",
-        brokerAuthority: mainDetails.authority?.brokerAuthority || "",
-      },
+      mcNumber: result.mcNumber,
+      status: result.status,
+      id: carrier.id || "N/A",
+      name: carrier.name || "N/A",
+      carrierStatus: carrier.status?.description || "Unknown",
+      mcNumberConfirmed: carrier.mcNumber || "N/A",
+      dotNumber: carrier.dotNumber || "N/A",
+      address: formatAddress(carrier.address?.find((addr) => addr.isPrimary)),
+      equipment:
+        carrier.equipment
+          ?.map((e) => `${e.qty}x ${e.size?.value} ${e.type?.value}`)
+          .join(", ") || "N/A",
+      insurance:
+        carrier.insurance
+          ?.map(
+            (i) =>
+              `${i.type?.value}: $${i.amount.toLocaleString()} (Exp: ${
+                i.expirationDate
+              })`
+          )
+          .join("; ") || "N/A",
     };
+  }
+
+  function formatAddress(addr) {
+    if (!addr) return "N/A";
+    return `${addr.line1 || ""}, ${addr.city || ""}, ${addr.state || ""}, ${
+      addr.zip || ""
+    }, ${addr.country || ""}`;
   }
 
   return (
@@ -374,7 +369,7 @@ const SurusUtilities = () => {
                                 <b>Name:</b> {fields.name}
                               </div>
                               <div>
-                                <b>Carrier Status:</b> {fields.statusValue}
+                                <b>Carrier Status:</b> {fields.carrierStatus}
                               </div>
                               <div>
                                 <b>MC Number:</b> {fields.mcNumber}
