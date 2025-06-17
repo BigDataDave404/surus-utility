@@ -99,11 +99,8 @@ const SurusUtilities = () => {
               result.mcNumber,
               result.status,
               result.name,
-              result.id,
               result.carrierStatus,
               result.address,
-              result.email,
-              result.phone,
               result.dotNumber,
               result.commonAuthority,
               result.contractAuthority,
@@ -237,7 +234,7 @@ const SurusUtilities = () => {
                 </div>
 
                 <div className="su-results">
-                  <div className="su-results-content">
+                  <pre>
                     {results.map((result, index) => {
                       if (selectedScript === "dat-rates") {
                         return (
@@ -283,9 +280,6 @@ const SurusUtilities = () => {
                                 <b>Name:</b> {result.name}
                               </div>
                               <div>
-                                <b>Carrier ID:</b> {result.id}
-                              </div>
-                              <div>
                                 <b>Carrier Status:</b> {result.carrierStatus}
                               </div>
                               <div>
@@ -298,10 +292,7 @@ const SurusUtilities = () => {
                                 <b>Address:</b> {result.address}
                               </div>
                               <div>
-                                <b>Email:</b> {result.email}
-                              </div>
-                              <div>
-                                <b>Phone:</b> {result.phone}
+                                <b>ID:</b> {result.id || "N/A"}
                               </div>
                             </div>
                           );
@@ -323,7 +314,7 @@ const SurusUtilities = () => {
                         </div>
                       );
                     })}
-                  </div>
+                  </pre>
                 </div>
               </div>
             )}

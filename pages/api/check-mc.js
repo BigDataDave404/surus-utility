@@ -134,15 +134,12 @@ export default async function handler(req, res) {
 
         return {
           mcNumber,
-          status: "Turvo Success",
-          id: c.id || "N/A",
+          status: "success",
           name: c.name || "N/A",
           carrierStatus: c.status?.description || "Unknown",
           mcNumberConfirmed: c.mcNumber || "N/A",
           dotNumber: c.dotNumber || "N/A",
           address: formatAddress(c.address?.find((a) => a.isPrimary)),
-          email: c.email || "N/A",
-          phone: c.phone || "N/A",
           equipment:
             c.equipment
               ?.map((e) => `${e.qty}x ${e.size?.value} ${e.type?.value}`)
@@ -183,10 +180,3 @@ export default async function handler(req, res) {
     res.status(500).json({ error: error.message });
   }
 }
-
-// MCP Script
-//
-///
-//
-//
-//
