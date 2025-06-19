@@ -92,19 +92,43 @@ const SurusUtilities = () => {
     let csvContent = "";
     if (selectedScript === "check-mc") {
       csvContent = [
-        "MC Number,Status,Name,Carrier Status,Address,DOT Number,Common Authority,Contract Authority,Broker Authority",
+        "ID,Status,MC Number,DOT Number,Name,Address,Email,Phone",
         ...results.map((result) => {
           if (typeof result === "object") {
+            // Extract primary address
+            const primaryAddress =
+              result.address?.find((addr) => addr.isPrimary) ||
+              result.address?.[0];
+            const addressString = primaryAddress
+              ? `${primaryAddress.line1 || ""} ${primaryAddress.line2 || ""} ${
+                  primaryAddress.city || ""
+                } ${primaryAddress.state || ""} ${
+                  primaryAddress.zip || ""
+                }`.trim()
+              : "N/A";
+
+            // Extract primary email
+            const primaryEmail =
+              result.email?.find((email) => email.isPrimary) ||
+              result.email?.[0];
+            const emailString = primaryEmail?.email || "N/A";
+
+            // Extract primary phone
+            const primaryPhone =
+              result.phone?.find((phone) => phone.isPrimary) ||
+              result.phone?.[0];
+            const phoneString = primaryPhone?.number || "N/A";
+
             return [
+              result.id,
+              // Extract status.code.value instead of just status
+              result.status?.code?.value || result.status || "N/A",
               result.mcNumber,
-              result.status,
-              result.name,
-              result.carrierStatus,
-              result.address,
               result.dotNumber,
-              result.commonAuthority,
-              result.contractAuthority,
-              result.brokerAuthority,
+              result.name,
+              addressString,
+              emailString,
+              phoneString,
             ]
               .map((v) => (v ? String(v).replace(/,/g, " ") : ""))
               .join(",");
@@ -258,7 +282,7 @@ const SurusUtilities = () => {
                         return (
                           <div key={index} className="su-result-row">
                             <span>
-                              {isSuccess ? "✅" : "❌"} MC{" "}
+                              {isSuccess ? "✅" : "❌"} Input Field{" "}
                               {result.mcNumber || result.shipmentID || ""}:{" "}
                               {result.message || result}
                             </span>
@@ -271,16 +295,40 @@ const SurusUtilities = () => {
                           typeof result === "object" &&
                           result.status !== "error"
                         ) {
+                          // Extract primary address
+                          const primaryAddress =
+                            result.address?.find((addr) => addr.isPrimary) ||
+                            result.address?.[0];
+                          const addressDisplay = primaryAddress
+                            ? `${primaryAddress.line1 || ""} ${
+                                primaryAddress.line2 || ""
+                              } ${primaryAddress.city || ""} ${
+                                primaryAddress.state || ""
+                              } ${primaryAddress.zip || ""}`.trim()
+                            : "N/A";
+
+                          // Extract primary email
+                          const primaryEmail =
+                            result.email?.find((email) => email.isPrimary) ||
+                            result.email?.[0];
+                          const emailDisplay = primaryEmail?.email || "N/A";
+
+                          // Extract primary phone
+                          const primaryPhone =
+                            result.phone?.find((phone) => phone.isPrimary) ||
+                            result.phone?.[0];
+                          const phoneDisplay = primaryPhone?.number || "N/A";
+
                           return (
                             <div key={index} className="su-result-row">
                               <div>
-                                <b>Status:</b> {result.status}
+                                <b>ID:</b> {result.id || "N/A"}
                               </div>
                               <div>
-                                <b>Name:</b> {result.name}
-                              </div>
-                              <div>
-                                <b>Carrier Status:</b> {result.carrierStatus}
+                                <b>Status:</b>{" "}
+                                {result.status?.code?.value ||
+                                  result.status ||
+                                  "N/A"}
                               </div>
                               <div>
                                 <b>MC Number:</b> {result.mcNumber}
@@ -289,10 +337,16 @@ const SurusUtilities = () => {
                                 <b>DOT Number:</b> {result.dotNumber}
                               </div>
                               <div>
-                                <b>Address:</b> {result.address}
+                                <b>Name:</b> {result.name}
                               </div>
                               <div>
-                                <b>ID:</b> {result.id || "N/A"}
+                                <b>Address:</b> {addressDisplay}
+                              </div>
+                              <div>
+                                <b>Email:</b> {emailDisplay}
+                              </div>
+                              <div>
+                                <b>Phone:</b> {phoneDisplay}
                               </div>
                             </div>
                           );
