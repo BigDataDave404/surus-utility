@@ -133,11 +133,11 @@ export default async function handler(req, res) {
         const c = data.details;
 
         return {
-          mcNumber,
-          status: "success",
           name: c.name || "N/A",
-          carrierStatus: c.status?.description || "Unknown",
-          mcNumberConfirmed: c.mcNumber || "N/A",
+          Status:
+            c.status?.code?.value ||
+            "Unknown Carrier Status (Active/Suspended/Inactive)",
+          mcNumber: c.mcNumber || "N/A",
           dotNumber: c.dotNumber || "N/A",
           address: formatAddress(c.address?.find((a) => a.isPrimary)),
           equipment:
@@ -156,6 +156,8 @@ export default async function handler(req, res) {
           commonAuthority: c.authority?.commonAuthority ?? "N/A",
           contractAuthority: c.authority?.contractAuthority ?? "N/A",
           brokerAuthority: c.authority?.brokerAuthority ?? "N/A",
+          email: c.email?.email,
+          phone: c.phone?.number,
         };
       } catch (error) {
         return {

@@ -263,13 +263,11 @@ const SurusUtilities = () => {
                           return (
                             <div key={index} className="su-result-row">
                               <div>
-                                <b>ID:</b> {result.id || "N/A"}
+                                <b>ID:</b> {details.id}
                               </div>
                               <div>
-                                <b>Status:</b>{" "}
-                                {result.status?.code?.value ||
-                                  result.status ||
-                                  "N/A"}
+                                <b>Carrier Status:</b>
+                                {result.status}
                               </div>
                               <div>
                                 <b>MC Number:</b> {result.mcNumber}
