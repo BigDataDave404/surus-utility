@@ -92,43 +92,19 @@ const SurusUtilities = () => {
     let csvContent = "";
     if (selectedScript === "check-mc") {
       csvContent = [
-        "ID,Status,MC Number,DOT Number,Name,Address,Email,Phone",
+        "MC Number,Status,Name,Carrier Status,Address,DOT Number,Common Authority,Contract Authority,Broker Authority",
         ...results.map((result) => {
           if (typeof result === "object") {
-            // Extract primary address
-            const primaryAddress =
-              result.address?.find((addr) => addr.isPrimary) ||
-              result.address?.[0];
-            const addressString = primaryAddress
-              ? `${primaryAddress.line1 || ""} ${primaryAddress.line2 || ""} ${
-                  primaryAddress.city || ""
-                } ${primaryAddress.state || ""} ${
-                  primaryAddress.zip || ""
-                }`.trim()
-              : "N/A";
-
-            // Extract primary email
-            const primaryEmail =
-              result.email?.find((email) => email.isPrimary) ||
-              result.email?.[0];
-            const emailString = primaryEmail?.email || "N/A";
-
-            // Extract primary phone
-            const primaryPhone =
-              result.phone?.find((phone) => phone.isPrimary) ||
-              result.phone?.[0];
-            const phoneString = primaryPhone?.number || "N/A";
-
             return [
-              result.id,
-              // Extract status.code.value instead of just status
-              result.status?.code?.value || result.status || "N/A",
               result.mcNumber,
               result.dotNumber,
+              result.status,
               result.name,
-              addressString,
-              emailString,
-              phoneString,
+              result.carrierStatus,
+              result.address,
+              result.id,
+              result.email,
+              result.phone,
             ]
               .map((v) => (v ? String(v).replace(/,/g, " ") : ""))
               .join(",");
@@ -295,40 +271,16 @@ const SurusUtilities = () => {
                           typeof result === "object" &&
                           result.status !== "error"
                         ) {
-                          // Extract primary address
-                          const primaryAddress =
-                            result.address?.find((addr) => addr.isPrimary) ||
-                            result.address?.[0];
-                          const addressDisplay = primaryAddress
-                            ? `${primaryAddress.line1 || ""} ${
-                                primaryAddress.line2 || ""
-                              } ${primaryAddress.city || ""} ${
-                                primaryAddress.state || ""
-                              } ${primaryAddress.zip || ""}`.trim()
-                            : "N/A";
-
-                          // Extract primary email
-                          const primaryEmail =
-                            result.email?.find((email) => email.isPrimary) ||
-                            result.email?.[0];
-                          const emailDisplay = primaryEmail?.email || "N/A";
-
-                          // Extract primary phone
-                          const primaryPhone =
-                            result.phone?.find((phone) => phone.isPrimary) ||
-                            result.phone?.[0];
-                          const phoneDisplay = primaryPhone?.number || "N/A";
-
                           return (
                             <div key={index} className="su-result-row">
                               <div>
                                 <b>ID:</b> {result.id || "N/A"}
                               </div>
                               <div>
-                                <b>Status:</b>{" "}
-                                {result.status?.code?.value ||
-                                  result.status ||
-                                  "N/A"}
+                                <b>Status:</b> {result.status}
+                              </div>
+                              <div>
+                                <b>Name:</b> {result.name}
                               </div>
                               <div>
                                 <b>MC Number:</b> {result.mcNumber}
@@ -337,16 +289,14 @@ const SurusUtilities = () => {
                                 <b>DOT Number:</b> {result.dotNumber}
                               </div>
                               <div>
-                                <b>Name:</b> {result.name}
+                                <b>Address:</b> {result.address}
+                              </div>
+
+                              <div>
+                                <b>Email:</b> {result.email || "N/A"}
                               </div>
                               <div>
-                                <b>Address:</b> {addressDisplay}
-                              </div>
-                              <div>
-                                <b>Email:</b> {emailDisplay}
-                              </div>
-                              <div>
-                                <b>Phone:</b> {phoneDisplay}
+                                <b>Phone:</b> {result.phone || "N/A"}
                               </div>
                             </div>
                           );
