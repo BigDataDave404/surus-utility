@@ -133,8 +133,9 @@ export default async function handler(req, res) {
         const c = data.details;
 
         return {
+          id: c.id,
           name: c.name || "N/A",
-          Status:
+          status:
             c.status?.code?.value ||
             "Unknown Carrier Status (Active/Suspended/Inactive)",
           mcNumber: c.mcNumber || "N/A",
@@ -155,7 +156,6 @@ export default async function handler(req, res) {
               .join("; ") || "N/A",
           commonAuthority: c.authority?.commonAuthority ?? "N/A",
           contractAuthority: c.authority?.contractAuthority ?? "N/A",
-          brokerAuthority: c.authority?.brokerAuthority ?? "N/A",
           email: c.email?.email,
           phone: c.phone?.number,
         };

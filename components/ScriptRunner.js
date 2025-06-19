@@ -263,7 +263,10 @@ const SurusUtilities = () => {
                           return (
                             <div key={index} className="su-result-row">
                               <div>
-                                <b>ID:</b> {details.id}
+                                <b>ID:</b> {result.id}
+                              </div>
+                              <div>
+                                <b>Name:</b> {result.name}
                               </div>
                               <div>
                                 <b>Carrier Status:</b>
@@ -276,16 +279,17 @@ const SurusUtilities = () => {
                                 <b>DOT Number:</b> {result.dotNumber}
                               </div>
                               <div>
-                                <b>Name:</b> {result.name}
-                              </div>
-                              <div>
                                 <b>Address:</b> {result.address}
                               </div>
                               <div>
-                                <b>Email:</b> {result.email || "N/A"}
+                                <b>Email:</b> {result.email || "Fuck"}
                               </div>
                               <div>
-                                <b>Phone:</b> {result.phone || "N/A"}
+                                <b>Phone:</b> {result.phone || "Shit"}
+                              </div>
+                              <div>
+                                <b>Authority:</b>
+                                {result.commonAuthority || "Wtf"}
                               </div>
                             </div>
                           );
