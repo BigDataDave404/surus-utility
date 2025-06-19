@@ -5,7 +5,7 @@ export default function Home() {
   return (
     <div>
       <Head>
-        <title>Surus Utilties</title>
+        <title>TEST Surus Utilties</title>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </Head>
       <ScriptRunner />
