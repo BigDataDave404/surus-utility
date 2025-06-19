@@ -90,36 +90,23 @@ const SurusUtilities = () => {
 
   const downloadResults = () => {
     let csvContent = "";
-    if (selectedScript === "check-mc") {
-      csvContent = [
-        "MC Number,Status,Name,Carrier Status,Address,DOT Number,Common Authority,Contract Authority,Broker Authority",
-        ...results.map((result) => {
-          if (typeof result === "object") {
-            return [
-              result.mcNumber,
-              result.dotNumber,
-              result.status,
-              result.name,
-              result.carrierStatus,
-              result.address,
-              result.id,
-              result.email,
-              result.phone,
-            ]
-              .map((v) => (v ? String(v).replace(/,/g, " ") : ""))
-              .join(",");
-          } else {
-            return "Invalid result";
-          }
-        }),
-      ].join("\n");
-    } else {
+    if (selectedScript === "dat-rates") {
+      csvContent = results
+        .map((result) =>
+          typeof result === "object" ? Object.values(result).join(",") : result
+        )
+        .join("\n");
+    } else if (
+      selectedScript === "tag-carrier" ||
+      selectedScript === "target-rate-tag"
+    ) {
       csvContent = results
         .map((result) =>
           typeof result === "object" ? Object.values(result).join(",") : result
         )
         .join("\n");
     }
+    // No CSV for check-mc due to complex nested data structure
 
     const blob = new Blob([csvContent], { type: "text/csv" });
     const url = window.URL.createObjectURL(blob);
@@ -225,12 +212,14 @@ const SurusUtilities = () => {
                       Time: {durationSeconds} seconds
                     </span>
                   )}
-                  <button
-                    onClick={downloadResults}
-                    className="su-btn su-btn-download"
-                  >
-                    <Download /> Download CSV
-                  </button>
+                  {selectedScript !== "check-mc" && (
+                    <button
+                      onClick={downloadResults}
+                      className="su-btn su-btn-download"
+                    >
+                      <Download /> Download CSV
+                    </button>
+                  )}
                 </div>
 
                 <div className="su-results">
@@ -277,10 +266,10 @@ const SurusUtilities = () => {
                                 <b>ID:</b> {result.id || "N/A"}
                               </div>
                               <div>
-                                <b>Status:</b> {result.status}
-                              </div>
-                              <div>
-                                <b>Name:</b> {result.name}
+                                <b>Status:</b>{" "}
+                                {result.status?.code?.value ||
+                                  result.status ||
+                                  "N/A"}
                               </div>
                               <div>
                                 <b>MC Number:</b> {result.mcNumber}
@@ -289,9 +278,11 @@ const SurusUtilities = () => {
                                 <b>DOT Number:</b> {result.dotNumber}
                               </div>
                               <div>
+                                <b>Name:</b> {result.name}
+                              </div>
+                              <div>
                                 <b>Address:</b> {result.address}
                               </div>
-
                               <div>
                                 <b>Email:</b> {result.email || "N/A"}
                               </div>
