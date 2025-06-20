@@ -161,9 +161,11 @@ export default async function handler(req, res) {
             c.email[0].email ||
             "N/A",
           phone:
-            c.phone?.find((p) => p.isPrimary)?.number ||
-            c.phone[0].phone ||
-            "N/A",
+            Array.isArray(c.phone) && c.phone.length > 0
+              ? c.phone.find((e) => e.isPrimary)?.phone ||
+                c.phone[0].phone ||
+                "N/A"
+              : "N/A",
         };
       } catch (error) {
         return {
