@@ -143,7 +143,7 @@ export default async function handler(req, res) {
           address: formatAddress(c.address?.find((a) => a.isPrimary)),
           equipment:
             c.equipment
-              ?.map((e) => `${e.qty}x ${e.size?.value} ${e.type?.value}`)
+              ?.map((e) => `${e.qty} - ${e.type?.value}`) //${e.size?.value} extra code//
               .join(", ") || "N/A",
           insurance:
             c.insurance
@@ -156,8 +156,11 @@ export default async function handler(req, res) {
               .join("; ") || "N/A",
           commonAuthority: c.authority?.commonAuthority ?? "N/A",
           contractAuthority: c.authority?.contractAuthority ?? "N/A",
-          email: c.email?.email,
-          phone: c.phone?.number,
+          email:
+            c.email.find((e) => e.isPrimary)?.email ||
+            c.email[0].email ||
+            "N/A",
+          phone: c.phone?.find((p) => p.isPrimary)?.number || "N/A",
         };
       } catch (error) {
         return {
