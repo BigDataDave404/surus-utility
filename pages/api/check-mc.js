@@ -157,9 +157,12 @@ export default async function handler(req, res) {
           commonAuthority: c.authority?.commonAuthority ?? "N/A",
           contractAuthority: c.authority?.contractAuthority ?? "N/A",
           email:
-            c.email.find((e) => e.isPrimary)?.email ||
-            c.email[0].email ||
-            "N/A",
+            Array.isArray(c.email) && c.email.length > 0
+              ? c.email.find((e) => e.isPrimary)?.email ||
+                c.email[0].email ||
+                "N/A"
+              : "N/A",
+
           phone:
             Array.isArray(c.phone) && c.phone.length > 0
               ? c.phone.find((e) => e.isPrimary)?.phone ||
